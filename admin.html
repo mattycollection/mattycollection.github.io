@@ -3,333 +3,394 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin · Inventario & Estadísticas</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Matty Collection · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --card: #1a1a26;
-    --border: #2a2a3d;
-    --accent: #6c63ff;
-    --accent2: #ff6584;
-    --accent3: #43e97b;
-    --text: #e8e8f0;
-    --muted: #6b6b8a;
-    --danger: #ff4757;
-    --warn: #ffa502;
+    --verde:       #1A3D2B;
+    --verde-med:   #1E4D33;
+    --verde-light: #245C3C;
+    --verde-pale:  #2D6B47;
+    --oro:         #C9A84C;
+    --oro-light:   #D4B96A;
+    --oro-dim:     #A8893A;
+    --crema:       #F5F0E8;
+    --crema-dark:  #EDE5D4;
+    --blanco:      #FDFAF5;
+    --texto:       #1A3D2B;
+    --muted:       #7A9B87;
+    --rojo:        #C0392B;
+    --border:      rgba(201,168,76,.25);
+    --sombra:      rgba(26,61,43,.12);
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    background: var(--crema);
+    color: var(--texto);
+    font-family: 'Jost', sans-serif;
     min-height: 100vh;
   }
 
-  /* SIDEBAR */
+  /* ─── SIDEBAR ─── */
   .sidebar {
-    position: fixed; left: 0; top: 0; bottom: 0;
-    width: 240px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
+    position: fixed; left:0; top:0; bottom:0; width:260px;
+    background: var(--verde);
     display: flex; flex-direction: column;
     z-index: 100;
     transition: transform .3s;
   }
-  .sidebar-logo {
-    padding: 28px 24px 20px;
-    border-bottom: 1px solid var(--border);
+  .sidebar-top {
+    padding: 32px 28px 24px;
+    border-bottom: 1px solid rgba(201,168,76,.2);
   }
-  .sidebar-logo span {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 20px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .sidebar-logo small {
-    display: block;
-    color: var(--muted);
-    font-size: 11px;
-    margin-top: 2px;
+  .brand-monogram {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: 1.5px solid var(--oro-dim);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 600;
+    color: var(--oro);
+    margin-bottom: 14px;
     letter-spacing: .05em;
   }
-  .nav { padding: 16px 12px; flex: 1; }
+  .brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600; font-size: 18px;
+    color: var(--crema);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .brand-sub {
+    font-size: 11px; color: var(--oro-dim);
+    letter-spacing: .12em; text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .nav { padding: 20px 16px; flex: 1; }
+  .nav-label {
+    font-size: 9px; color: var(--oro-dim); letter-spacing: .18em;
+    text-transform: uppercase; font-weight: 600;
+    padding: 0 12px; margin-bottom: 8px; margin-top: 16px;
+  }
   .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 11px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    color: var(--muted);
-    font-size: 14px;
-    font-weight: 500;
+    display: flex; align-items: center; gap: 11px;
+    padding: 11px 14px; border-radius: 8px;
+    cursor: pointer; color: rgba(245,240,232,.6);
+    font-size: 13px; font-weight: 400;
+    letter-spacing: .03em;
     transition: all .2s;
-    margin-bottom: 4px;
     border: none; background: none; width: 100%; text-align: left;
+    margin-bottom: 2px;
   }
-  .nav-item:hover { background: var(--card); color: var(--text); }
-  .nav-item.active { background: rgba(108,99,255,.15); color: var(--accent); }
-  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-item:hover { background: rgba(201,168,76,.1); color: var(--crema); }
+  .nav-item.active {
+    background: rgba(201,168,76,.15);
+    color: var(--oro-light);
+    border-left: 2px solid var(--oro);
+    padding-left: 12px;
+  }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
   .sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-    font-size: 11px;
-    color: var(--muted);
-    text-align: center;
+    padding: 18px 24px;
+    border-top: 1px solid rgba(201,168,76,.15);
+    font-size: 11px; color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .online-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #4CAF50; flex-shrink: 0;
   }
 
-  /* MAIN */
-  .main {
-    margin-left: 240px;
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-  }
+  /* ─── MAIN ─── */
+  .main { margin-left: 260px; min-height: 100vh; }
+
   .topbar {
-    padding: 20px 32px;
-    border-bottom: 1px solid var(--border);
+    background: var(--blanco);
+    border-bottom: 1px solid var(--crema-dark);
+    padding: 0 36px;
+    height: 68px;
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--surface);
     position: sticky; top: 0; z-index: 50;
+    box-shadow: 0 2px 12px var(--sombra);
   }
-  .topbar-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700; font-size: 20px;
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .hamburger {
+    display: none; background: none; border: none;
+    cursor: pointer; color: var(--verde); padding: 6px;
   }
-  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 600;
+    color: var(--verde); letter-spacing: .04em;
+  }
+  .page-title em { color: var(--oro-dim); font-style: italic; font-size: 14px; margin-left: 8px; font-family: 'Jost', sans-serif; }
+
+  .topbar-actions { display: flex; gap: 10px; }
   .btn {
-    padding: 9px 18px;
-    border-radius: 9px;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none;
-    transition: all .2s; display: flex; align-items: center; gap: 6px;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: 6px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase;
+    cursor: pointer; border: none; transition: all .2s;
+    font-family: 'Jost', sans-serif;
   }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #7c74ff; transform: translateY(-1px); }
-  .btn-ghost { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: var(--border); }
-  .btn-danger { background: rgba(255,71,87,.15); color: var(--danger); border: 1px solid rgba(255,71,87,.3); }
-  .btn-danger:hover { background: var(--danger); color: #fff; }
-  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-gold {
+    background: var(--oro); color: var(--verde);
+  }
+  .btn-gold:hover { background: var(--oro-light); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,168,76,.3); }
+  .btn-outline {
+    background: transparent; color: var(--verde);
+    border: 1.5px solid var(--verde-pale);
+  }
+  .btn-outline:hover { background: var(--verde); color: var(--crema); }
+  .btn-danger-soft {
+    background: rgba(192,57,43,.08); color: var(--rojo);
+    border: 1px solid rgba(192,57,43,.2);
+  }
+  .btn-danger-soft:hover { background: var(--rojo); color: #fff; }
+  .btn-sm { padding: 7px 14px; font-size: 11px; }
+  .btn svg { width: 13px; height: 13px; }
 
-  .content { padding: 32px; flex: 1; }
+  .content { padding: 32px 36px; }
 
-  /* TABS */
-  .tabs {
-    display: flex; gap: 4px;
-    background: var(--surface);
-    padding: 5px;
-    border-radius: 12px;
+  /* ─── TABS ─── */
+  .tabs-row {
+    display: flex; gap: 0;
+    border-bottom: 1.5px solid var(--crema-dark);
     margin-bottom: 28px;
-    border: 1px solid var(--border);
-    width: fit-content;
   }
   .tab {
-    padding: 8px 20px;
-    border-radius: 9px;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none;
-    color: var(--muted); background: none;
+    padding: 10px 24px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    cursor: pointer; border: none; background: none;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1.5px;
     transition: all .2s;
+    font-family: 'Jost', sans-serif;
   }
-  .tab.active { background: var(--accent); color: #fff; }
-  .tab:hover:not(.active) { color: var(--text); background: var(--card); }
+  .tab:hover { color: var(--verde); }
+  .tab.active { color: var(--oro-dim); border-bottom-color: var(--oro); }
 
-  /* TAB PANELS */
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* STATS GRID */
+  /* ─── STAT CARDS ─── */
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 28px;
   }
   .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    position: relative; overflow: hidden;
+    background: var(--blanco);
+    border: 1px solid var(--crema-dark);
+    border-radius: 10px; padding: 22px 20px;
+    position: relative;
   }
-  .stat-card::before {
+  .stat-card::after {
     content: '';
-    position: absolute; top: 0; right: 0;
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    opacity: .08;
-    transform: translate(20px,-20px);
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; border-radius: 0 0 10px 10px;
   }
-  .stat-card:nth-child(1)::before { background: var(--accent); }
-  .stat-card:nth-child(2)::before { background: var(--accent2); }
-  .stat-card:nth-child(3)::before { background: var(--accent3); }
-  .stat-card:nth-child(4)::before { background: var(--warn); }
-  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
-  .stat-value { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; margin: 6px 0 4px; }
-  .stat-sub { font-size: 12px; color: var(--muted); }
+  .stat-card:nth-child(1)::after { background: var(--oro); }
+  .stat-card:nth-child(2)::after { background: var(--verde-pale); }
+  .stat-card:nth-child(3)::after { background: #E67E22; }
+  .stat-card:nth-child(4)::after { background: var(--muted); }
+  .stat-label {
+    font-size: 10px; color: var(--muted);
+    letter-spacing: .12em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px; font-weight: 700;
+    color: var(--verde); line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-sub { font-size: 11px; color: var(--muted); }
 
-  /* TABLE */
-  .table-wrap {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
+  /* ─── TABLE ─── */
+  .table-card {
+    background: var(--blanco);
+    border: 1px solid var(--crema-dark);
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 2px 16px var(--sombra);
   }
-  .table-header {
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--border);
+  .table-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--crema-dark);
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    flex-wrap: wrap;
+    flex-wrap: wrap; background: var(--blanco);
   }
-  .table-header h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
-  .search-box {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 8px 14px;
-    font-size: 13px; color: var(--text);
+  .table-head-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 600; color: var(--verde);
   }
-  .search-box input {
-    border: none; background: none; color: var(--text); font-size: 13px; outline: none; width: 180px;
+  .search-wrap {
+    display: flex; align-items: center; gap: 9px;
+    border: 1.5px solid var(--crema-dark); border-radius: 7px;
+    padding: 8px 14px; background: var(--crema);
+    transition: border-color .2s;
   }
-  .search-box input::placeholder { color: var(--muted); }
+  .search-wrap:focus-within { border-color: var(--oro-dim); }
+  .search-wrap input {
+    border: none; background: none; color: var(--texto);
+    font-size: 13px; outline: none; width: 180px;
+    font-family: 'Jost', sans-serif;
+  }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-wrap svg { color: var(--muted); width: 14px; height: 14px; flex-shrink: 0; }
+
   table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #F8F5EE; }
   th {
-    text-align: left; padding: 14px 20px;
-    font-size: 11px; color: var(--muted);
-    font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    text-align: left; padding: 13px 20px;
+    font-size: 10px; color: var(--muted);
+    font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    border-bottom: 1px solid var(--crema-dark);
   }
   td {
-    padding: 14px 20px;
-    font-size: 13px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
+    padding: 14px 20px; font-size: 13px;
+    border-bottom: 1px solid var(--crema-dark);
+    vertical-align: middle; color: var(--texto);
   }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,.02); }
-  .badge {
-    display: inline-flex; align-items: center;
-    padding: 3px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 600;
-  }
-  .badge-green { background: rgba(67,233,123,.12); color: var(--accent3); }
-  .badge-red { background: rgba(255,71,87,.12); color: var(--danger); }
-  .badge-yellow { background: rgba(255,165,2,.12); color: var(--warn); }
-  .actions { display: flex; gap: 6px; }
+  tr:hover td { background: #FDFAF5; }
+  .prod-name { font-weight: 500; color: var(--verde); }
 
-  /* CHARTS */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: .04em;
+  }
+  .pill-green { background: rgba(45,107,71,.1); color: var(--verde-pale); border: 1px solid rgba(45,107,71,.2); }
+  .pill-amber { background: rgba(230,126,34,.1); color: #c0711d; border: 1px solid rgba(230,126,34,.2); }
+  .pill-red   { background: rgba(192,57,43,.1);  color: var(--rojo); border: 1px solid rgba(192,57,43,.2); }
+
+  .row-actions { display: flex; gap: 7px; }
+
+  /* ─── CHARTS ─── */
   .charts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 20px;
-    margin-bottom: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
+    gap: 20px; margin-bottom: 24px;
   }
   .chart-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
+    background: var(--blanco);
+    border: 1px solid var(--crema-dark);
+    border-radius: 10px; padding: 22px;
+    box-shadow: 0 2px 12px var(--sombra);
   }
-  .chart-card h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 16px; }
+  .chart-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px; font-weight: 600; color: var(--verde);
+    margin-bottom: 4px;
+  }
+  .chart-sub { font-size: 11px; color: var(--muted); margin-bottom: 18px; letter-spacing: .05em; text-transform: uppercase; }
 
-  /* MODAL */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.6);
-    backdrop-filter: blur(4px);
-    z-index: 200;
-    display: none; align-items: center; justify-content: center;
-    padding: 20px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 28px;
-    width: 100%; max-width: 460px;
-    animation: slideUp .25s ease;
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .modal h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; margin-bottom: 20px; }
-  .form-group { margin-bottom: 16px; }
-  label { display: block; font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 7px; }
-  .form-control {
-    width: 100%; padding: 11px 14px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 9px; color: var(--text); font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
-    transition: border-color .2s; outline: none;
-  }
-  .form-control:focus { border-color: var(--accent); }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
-
-  /* TOAST */
-  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
-  .toast {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 18px;
-    font-size: 13px; min-width: 220px;
-    display: flex; align-items: center; gap: 10px;
-    animation: toastIn .3s ease;
-    box-shadow: 0 8px 32px rgba(0,0,0,.3);
-  }
-  @keyframes toastIn {
-    from { opacity:0; transform: translateX(20px); }
-    to { opacity:1; transform: translateX(0); }
-  }
-  .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-  /* HISTORIAL */
-  .history-list { display: flex; flex-direction: column; gap: 8px; }
-  .history-item {
-    background: var(--card); border: 1px solid var(--border);
+  /* ─── HISTORIAL ─── */
+  .hist-list { display: flex; flex-direction: column; gap: 10px; }
+  .hist-item {
+    background: var(--blanco);
+    border: 1px solid var(--crema-dark);
     border-radius: 10px; padding: 14px 18px;
     display: flex; gap: 14px; align-items: flex-start;
   }
-  .history-icon {
-    width: 34px; height: 34px; border-radius: 9px;
+  .hist-icon {
+    width: 36px; height: 36px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; font-size: 16px;
+    font-size: 16px; flex-shrink: 0;
   }
-  .history-body { flex: 1; }
-  .history-body strong { font-size: 14px; font-weight: 500; }
-  .history-body small { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
+  .hist-body strong { font-size: 14px; font-weight: 500; color: var(--verde); }
+  .hist-body small { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
 
-  /* HAMBURGER */
-  .hamburger {
-    display: none; background: none; border: none;
-    cursor: pointer; color: var(--text); padding: 6px;
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,61,43,.55);
+    backdrop-filter: blur(6px);
+    z-index: 300;
+    display: none; align-items: center; justify-content: center; padding: 20px;
   }
-  .overlay-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90; }
-
-  /* EMPTY STATE */
-  .empty-state {
-    text-align: center; padding: 60px 20px; color: var(--muted);
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--blanco);
+    border: 1px solid var(--crema-dark);
+    border-radius: 14px; padding: 32px;
+    width: 100%; max-width: 460px;
+    animation: slideUp .25s ease;
+    box-shadow: 0 20px 60px rgba(26,61,43,.25);
   }
-  .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: .4; }
-  .empty-state p { font-size: 14px; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .modal-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+  }
+  .modal-icon {
+    width: 42px; height: 42px; border-radius: 9px;
+    background: rgba(201,168,76,.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .modal h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600; font-size: 22px; color: var(--verde);
+  }
+  .form-group { margin-bottom: 18px; }
+  label {
+    display: block; font-size: 10px; color: var(--muted);
+    font-weight: 600; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px;
+  }
+  .inp {
+    width: 100%; padding: 11px 14px;
+    background: var(--crema); border: 1.5px solid var(--crema-dark);
+    border-radius: 8px; color: var(--texto); font-size: 14px;
+    font-family: 'Jost', sans-serif; outline: none; transition: border-color .2s;
+  }
+  .inp:focus { border-color: var(--oro-dim); background: var(--blanco); }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
 
-  /* LOADING */
-  .loading { text-align: center; padding: 40px; color: var(--muted); }
-  .spinner {
-    width: 32px; height: 32px; border: 2px solid var(--border);
-    border-top-color: var(--accent);
+  /* ─── TOAST ─── */
+  .toasts { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    background: var(--verde); color: var(--crema);
+    border: 1px solid rgba(201,168,76,.3);
+    border-radius: 9px; padding: 12px 18px;
+    font-size: 13px; min-width: 230px;
+    display: flex; align-items: center; gap: 10px;
+    animation: toastIn .3s ease;
+    box-shadow: 0 8px 28px rgba(26,61,43,.25);
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+  .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ─── ESTADOS ─── */
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .spin {
+    width: 30px; height: 30px;
+    border: 2px solid var(--crema-dark);
+    border-top-color: var(--oro);
     border-radius: 50%; animation: spin .7s linear infinite;
     margin: 0 auto 12px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state svg { width: 44px; height: 44px; margin-bottom: 12px; opacity: .3; }
+  .empty-state p { font-size: 13px; letter-spacing: .03em; }
 
-  /* RESPONSIVE */
+  /* ─── OVERLAY MOBILE ─── */
+  .overlay-bg { display: none; position: fixed; inset: 0; background: rgba(26,61,43,.5); z-index: 90; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
   @media (max-width: 768px) {
     .sidebar { transform: translateX(-100%); }
     .sidebar.open { transform: translateX(0); }
@@ -337,15 +398,14 @@
     .main { margin-left: 0; }
     .hamburger { display: flex; }
     .content { padding: 20px 16px; }
-    .topbar { padding: 16px; }
-    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .topbar { padding: 0 16px; }
     .charts-grid { grid-template-columns: 1fr; }
-    .search-box input { width: 120px; }
-    table { font-size: 12px; }
-    th, td { padding: 10px 12px; }
+    .search-wrap input { width: 130px; }
+    th, td { padding: 11px 12px; font-size: 12px; }
   }
-  @media (max-width: 480px) {
-    .stats-grid { grid-template-columns: 1fr; }
+  @media (max-width: 500px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .stat-value { font-size: 28px; }
   }
 </style>
 </head>
@@ -353,417 +413,403 @@
 
 <!-- SIDEBAR -->
 <nav class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <span>⬡ INVENTARIO</span>
-    <small>Panel de Administración</small>
+  <div class="sidebar-top">
+    <div class="brand-monogram">MC</div>
+    <div class="brand-name">Matty Collection</div>
+    <div class="brand-sub">Panel de Administración</div>
   </div>
   <div class="nav">
+    <div class="nav-label">Inventario</div>
     <button class="nav-item active" onclick="setTab('productos')">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
       Productos
     </button>
+    <div class="nav-label">Análisis</div>
     <button class="nav-item" onclick="setTab('estadisticas')">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
       Estadísticas
     </button>
+    <div class="nav-label">Registro</div>
     <button class="nav-item" onclick="setTab('historial')">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
       Historial
     </button>
   </div>
-  <div class="sidebar-footer">Google Sheets · Sincronizado</div>
+  <div class="sidebar-footer">
+    <div class="online-dot"></div>
+    Sincronizado con Google Sheets
+  </div>
 </nav>
-<div class="overlay-bg" id="overlay" onclick="closeSidebar()"></div>
+<div class="overlay-bg" id="overlayBg" onclick="closeSidebar()"></div>
 
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <div style="display:flex;align-items:center;gap:12px">
+    <div class="topbar-left">
       <button class="hamburger" onclick="openSidebar()">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <span class="topbar-title" id="pageTitle">Productos</span>
+      <div class="page-title" id="pageTitle">Productos <em>· Inventario</em></div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-ghost btn-sm" onclick="loadAll()">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      <button class="btn btn-outline btn-sm" onclick="loadAll()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
         Actualizar
       </button>
-      <button class="btn btn-primary btn-sm" onclick="openModal()" id="addBtn">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nuevo
+      <button class="btn btn-gold btn-sm" id="btnAdd" onclick="openModal()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo Producto
       </button>
     </div>
   </div>
 
   <div class="content">
-
     <!-- TABS -->
-    <div class="tabs">
+    <div class="tabs-row">
       <button class="tab active" onclick="setTab('productos')">Productos</button>
       <button class="tab" onclick="setTab('estadisticas')">Estadísticas</button>
       <button class="tab" onclick="setTab('historial')">Historial</button>
     </div>
 
-    <!-- PANEL PRODUCTOS -->
+    <!-- PRODUCTOS -->
     <div class="panel active" id="panel-productos">
-      <div class="stats-grid" id="statsRow">
-        <div class="stat-card"><div class="stat-label">Total Productos</div><div class="stat-value" id="s-total">—</div><div class="stat-sub">en inventario</div></div>
-        <div class="stat-card"><div class="stat-label">Unidades Totales</div><div class="stat-value" id="s-units">—</div><div class="stat-sub">en stock</div></div>
-        <div class="stat-card"><div class="stat-label">Stock Bajo</div><div class="stat-value" id="s-low">—</div><div class="stat-sub">productos &lt; 10 und</div></div>
-        <div class="stat-card"><div class="stat-label">Ventas Totales</div><div class="stat-value" id="s-sales">—</div><div class="stat-sub">registradas</div></div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Productos</div>
+          <div class="stat-value" id="s-total">—</div>
+          <div class="stat-sub">en catálogo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Unidades Stock</div>
+          <div class="stat-value" id="s-units">—</div>
+          <div class="stat-sub">disponibles</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Stock Bajo</div>
+          <div class="stat-value" id="s-low">—</div>
+          <div class="stat-sub">menos de 10 und</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ventas Totales</div>
+          <div class="stat-value" id="s-ventas">—</div>
+          <div class="stat-sub">transacciones</div>
+        </div>
       </div>
 
-      <div class="table-wrap">
-        <div class="table-header">
-          <h3>Lista de Productos</h3>
-          <div class="search-box">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Buscar producto…" id="searchInput" oninput="renderTable()">
+      <div class="table-card">
+        <div class="table-head">
+          <div class="table-head-title">Lista de Productos</div>
+          <div class="search-wrap">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="buscar" placeholder="Buscar por nombre…" oninput="renderTabla()">
           </div>
         </div>
-        <div id="tableContainer">
-          <div class="loading"><div class="spinner"></div>Cargando productos…</div>
+        <div id="tablaWrap">
+          <div class="loading-state"><div class="spin"></div>Cargando productos…</div>
         </div>
       </div>
     </div>
 
-    <!-- PANEL ESTADÍSTICAS -->
+    <!-- ESTADÍSTICAS -->
     <div class="panel" id="panel-estadisticas">
       <div class="charts-grid">
         <div class="chart-card">
-          <h3>Ventas por Producto</h3>
+          <div class="chart-title">Ventas por Producto</div>
+          <div class="chart-sub">Unidades vendidas</div>
           <canvas id="chartVentas" height="220"></canvas>
         </div>
         <div class="chart-card">
-          <h3>Stock Actual</h3>
+          <div class="chart-title">Distribución de Stock</div>
+          <div class="chart-sub">Unidades disponibles</div>
           <canvas id="chartStock" height="220"></canvas>
         </div>
       </div>
-      <div class="charts-grid">
-        <div class="chart-card" style="grid-column: 1/-1">
-          <h3>Ventas en el Tiempo</h3>
-          <canvas id="chartLinea" height="140"></canvas>
-        </div>
+      <div class="chart-card">
+        <div class="chart-title">Actividad de Ventas</div>
+        <div class="chart-sub">Ventas registradas en el tiempo</div>
+        <canvas id="chartLinea" height="110"></canvas>
       </div>
     </div>
 
-    <!-- PANEL HISTORIAL -->
+    <!-- HISTORIAL -->
     <div class="panel" id="panel-historial">
-      <div id="historialContainer">
-        <div class="loading"><div class="spinner"></div>Cargando historial…</div>
+      <div id="histWrap">
+        <div class="loading-state"><div class="spin"></div>Cargando historial…</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL PRODUCTO -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <h2 id="modalTitle">Nuevo Producto</h2>
+    <div class="modal-header">
+      <div class="modal-icon">📦</div>
+      <h2 id="modalTitulo">Nuevo Producto</h2>
+    </div>
     <input type="hidden" id="editRow">
     <div class="form-group">
       <label>Nombre del Producto</label>
-      <input class="form-control" id="fNombre" placeholder="Ej: Camiseta Azul L">
+      <input class="inp" id="fNombre" placeholder="Ej: Vestido Floral Talla M">
     </div>
     <div class="form-group">
       <label>Cantidad en Stock</label>
-      <input class="form-control" id="fCantidad" type="number" min="0" placeholder="0">
+      <input class="inp" id="fCantidad" type="number" min="0" placeholder="0">
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveProduct()">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-gold" onclick="guardarProducto()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
         Guardar
       </button>
     </div>
   </div>
 </div>
 
-<div class="toast-container" id="toastContainer"></div>
+<div class="toasts" id="toasts"></div>
 
 <script>
-const SHEET_ID = "1-9w5ezwpbDQ79D6IE7YKDcDRxvn_CaBN5nabYm-bBuM";
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
 
-let productos = [];
-let ventas = [];
-let historial = [];
+let productos = [], ventas = [], historial = [];
 let charts = {};
 
-// ─── NAV ───
-function setTab(name) {
+// ─── NAVEGACIÓN ─────────────────────────────────────────
+const tabCfg = {
+  productos:   { title: 'Productos <em>· Inventario</em>', addBtn: true },
+  estadisticas:{ title: 'Estadísticas <em>· Análisis</em>', addBtn: false },
+  historial:   { title: 'Historial <em>· Cambios</em>', addBtn: false },
+};
+function setTab(t) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  const tabs = document.querySelectorAll('.tab');
-  const navs = document.querySelectorAll('.nav-item');
-  const map = {productos:0, estadisticas:1, historial:2};
-  tabs[map[name]].classList.add('active');
-  navs[map[name]].classList.add('active');
-  const titles = {productos:'Productos', estadisticas:'Estadísticas', historial:'Historial'};
-  document.getElementById('pageTitle').textContent = titles[name];
-  document.getElementById('addBtn').style.display = name === 'productos' ? '' : 'none';
-  if(name === 'estadisticas') renderCharts();
-  if(name === 'historial') renderHistorial();
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  const idx = {productos:0,estadisticas:1,historial:2}[t];
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  document.getElementById('pageTitle').innerHTML = tabCfg[t].title;
+  document.getElementById('btnAdd').style.display = tabCfg[t].addBtn ? '' : 'none';
+  if(t==='estadisticas') dibujarCharts();
+  if(t==='historial') renderHistorial();
   closeSidebar();
 }
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlayBg').classList.add('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('open'); }
 
-function openSidebar() {
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('overlay').classList.add('open');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-}
-
-// ─── DATA ───
-async function callSheet(action, payload = {}) {
-  const params = new URLSearchParams({action, ...payload});
-  const res = await fetch(SCRIPT_URL + '?' + params);
-  const text = await res.text();
-  try { return JSON.parse(text); } catch { return {ok: false, error: text}; }
+// ─── API ─────────────────────────────────────────────────
+async function api(params) {
+  const qs = new URLSearchParams(params);
+  const r = await fetch(URL_SCRIPT + '?' + qs);
+  const txt = await r.text();
+  try { return JSON.parse(txt); } catch { return {ok:false,error:txt}; }
 }
 
 async function loadAll() {
   try {
-    const [pRes, vRes, hRes] = await Promise.all([
-      callSheet('getProductos'),
-      callSheet('getVentas'),
-      callSheet('getHistorial'),
+    const [pr, vr, hr] = await Promise.all([
+      api({action:'getProductos'}),
+      api({action:'getVentas'}),
+      api({action:'getHistorial'}),
     ]);
-    productos = pRes.data || [];
-    ventas = vRes.data || [];
-    historial = hRes.data || [];
-    updateStats();
-    renderTable();
-    if(document.getElementById('panel-estadisticas').classList.contains('active')) renderCharts();
-    if(document.getElementById('panel-historial').classList.contains('active')) renderHistorial();
-  } catch(e) {
-    // Demo mode con datos ficticios si no hay conexión
-    loadDemoData();
-  }
-}
-
-function loadDemoData() {
-  productos = [
-    {row:2, nombre:'Camiseta Negra M', cantidad:45, fecha:'2025-01-10'},
-    {row:3, nombre:'Pantalón Slim Fit', cantidad:28, fecha:'2025-01-12'},
-    {row:4, nombre:'Zapatillas Running', cantidad:7, fecha:'2025-01-15'},
-    {row:5, nombre:'Gorra Azul', cantidad:62, fecha:'2025-01-18'},
-    {row:6, nombre:'Bolso Cuero', cantidad:3, fecha:'2025-01-20'},
-    {row:7, nombre:'Camisa Blanca XL', cantidad:15, fecha:'2025-01-22'},
-  ];
-  ventas = [
-    {producto:'Camiseta Negra M', cantidad:12, fecha:'2025-02-01'},
-    {producto:'Camiseta Negra M', cantidad:8, fecha:'2025-02-05'},
-    {producto:'Pantalón Slim Fit', cantidad:5, fecha:'2025-02-03'},
-    {producto:'Zapatillas Running', cantidad:3, fecha:'2025-02-07'},
-    {producto:'Gorra Azul', cantidad:20, fecha:'2025-02-08'},
-    {producto:'Bolso Cuero', cantidad:2, fecha:'2025-02-10'},
-  ];
-  historial = [
-    {accion:'Producto creado', detalle:'Camiseta Negra M', fecha:'2025-01-10 09:32', tipo:'create'},
-    {accion:'Producto editado', detalle:'Zapatillas Running - cantidad 10→7', fecha:'2025-02-07 14:15', tipo:'edit'},
-    {accion:'Venta registrada', detalle:'20x Gorra Azul', fecha:'2025-02-08 11:00', tipo:'sale'},
-  ];
-  updateStats(); renderTable();
-  toast('Modo demo: conecta tu Google Sheet para datos reales', 'warn');
-}
-
-// ─── STATS ───
-function updateStats() {
-  document.getElementById('s-total').textContent = productos.length;
-  const units = productos.reduce((a,b) => a + (+b.cantidad||0), 0);
-  document.getElementById('s-units').textContent = units;
-  const low = productos.filter(p => (+p.cantidad||0) < 10).length;
-  document.getElementById('s-low').textContent = low;
-  document.getElementById('s-sales').textContent = ventas.length;
-}
-
-// ─── TABLE ───
-function renderTable() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const filtered = productos.filter(p => p.nombre.toLowerCase().includes(q));
-  const cont = document.getElementById('tableContainer');
-  if(!filtered.length) {
-    cont.innerHTML = `<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg><p>No se encontraron productos</p></div>`;
+    productos = pr.data || [];
+    ventas    = vr.data || [];
+    historial = hr.data || [];
+  } catch {
+    demoData();
     return;
   }
-  let html = `<table><thead><tr>
-    <th>#</th><th>Nombre</th><th>Cantidad</th><th>Estado</th><th>Fecha Registro</th><th>Acciones</th>
-  </tr></thead><tbody>`;
-  filtered.forEach((p,i) => {
-    const qty = +p.cantidad||0;
-    let badge = qty === 0
-      ? `<span class="badge badge-red">Sin stock</span>`
-      : qty < 10
-      ? `<span class="badge badge-yellow">Stock bajo</span>`
-      : `<span class="badge badge-green">Disponible</span>`;
-    html += `<tr>
-      <td style="color:var(--muted)">${i+1}</td>
-      <td><strong>${esc(p.nombre)}</strong></td>
-      <td><strong>${qty}</strong> <span style="color:var(--muted);font-size:11px">und</span></td>
-      <td>${badge}</td>
+  actualizarStats(); renderTabla();
+  if(document.getElementById('panel-estadisticas').classList.contains('active')) dibujarCharts();
+  if(document.getElementById('panel-historial').classList.contains('active')) renderHistorial();
+}
+
+function demoData() {
+  productos = [
+    {row:2,nombre:'Vestido Floral S',cantidad:34,fecha:'2025-01-10'},
+    {row:3,nombre:'Blusa Lino Beige M',cantidad:22,fecha:'2025-01-12'},
+    {row:4,nombre:'Pantalón Palazzo L',cantidad:8,fecha:'2025-01-15'},
+    {row:5,nombre:'Cartera Tejida',cantidad:45,fecha:'2025-01-18'},
+    {row:6,nombre:'Sandalias Doradas 38',cantidad:3,fecha:'2025-01-20'},
+    {row:7,nombre:'Set Aretes Perla',cantidad:60,fecha:'2025-01-22'},
+  ];
+  ventas = [
+    {producto:'Vestido Floral S',cantidad:14,fecha:'2025-02-01'},
+    {producto:'Blusa Lino Beige M',cantidad:9,fecha:'2025-02-03'},
+    {producto:'Cartera Tejida',cantidad:20,fecha:'2025-02-06'},
+    {producto:'Set Aretes Perla',cantidad:15,fecha:'2025-02-08'},
+    {producto:'Sandalias Doradas 38',cantidad:2,fecha:'2025-02-10'},
+  ];
+  historial = [
+    {accion:'Producto creado',detalle:'Vestido Floral S',fecha:'2025-01-10 09:32',tipo:'create'},
+    {accion:'Venta registrada',detalle:'14× Vestido Floral S',fecha:'2025-02-01 11:20',tipo:'sale'},
+    {accion:'Producto editado',detalle:'Sandalias Doradas 38 · stock actualizado',fecha:'2025-02-05 14:00',tipo:'edit'},
+    {accion:'Venta registrada',detalle:'20× Cartera Tejida',fecha:'2025-02-06 16:45',tipo:'sale'},
+  ];
+  actualizarStats(); renderTabla();
+  toast('Modo demo — conecta tu Google Script para datos reales', 'warn');
+}
+
+// ─── STATS ────────────────────────────────────────────────
+function actualizarStats() {
+  document.getElementById('s-total').textContent  = productos.length;
+  document.getElementById('s-units').textContent  = productos.reduce((a,b)=>a+(+b.cantidad||0),0);
+  document.getElementById('s-low').textContent    = productos.filter(p=>(+p.cantidad||0)<10).length;
+  document.getElementById('s-ventas').textContent = ventas.length;
+}
+
+// ─── TABLA ───────────────────────────────────────────────
+function renderTabla() {
+  const q = (document.getElementById('buscar').value||'').toLowerCase();
+  const lista = productos.filter(p=>(p.nombre||'').toLowerCase().includes(q));
+  const w = document.getElementById('tablaWrap');
+  if(!lista.length){
+    w.innerHTML = `<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No se encontraron productos</p></div>`;
+    return;
+  }
+  let h = `<table><thead><tr><th>#</th><th>Nombre</th><th>Cantidad</th><th>Estado</th><th>Registro</th><th>Acciones</th></tr></thead><tbody>`;
+  lista.forEach((p,i)=>{
+    const q2 = +p.cantidad||0;
+    const pill = q2===0
+      ? `<span class="pill pill-red">Sin stock</span>`
+      : q2<10
+      ? `<span class="pill pill-amber">Stock bajo</span>`
+      : `<span class="pill pill-green">Disponible</span>`;
+    h += `<tr>
+      <td style="color:var(--muted);font-size:12px">${i+1}</td>
+      <td><span class="prod-name">${esc(p.nombre)}</span></td>
+      <td><strong>${q2}</strong> <span style="color:var(--muted);font-size:11px">und</span></td>
+      <td>${pill}</td>
       <td style="color:var(--muted)">${p.fecha||'—'}</td>
-      <td><div class="actions">
-        <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.row})">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.row})">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-        </button>
+      <td><div class="row-actions">
+        <button class="btn btn-outline btn-sm" onclick="editarProducto(${p.row})">Editar</button>
+        <button class="btn btn-danger-soft btn-sm" onclick="eliminarProducto(${p.row})">Eliminar</button>
       </div></td>
     </tr>`;
   });
-  html += '</tbody></table>';
-  cont.innerHTML = html;
+  h += '</tbody></table>';
+  w.innerHTML = h;
 }
 
-// ─── CHARTS ───
-function renderCharts() {
-  const colors = ['#6c63ff','#ff6584','#43e97b','#ffa502','#00d2ff','#f7971e','#c471ed'];
+// ─── CHARTS ──────────────────────────────────────────────
+const C = ['#C9A84C','#1A3D2B','#2D6B47','#A8893A','#7A9B87','#E8D5A3'];
+function dibujarCharts() {
+  const vMap={};
+  ventas.forEach(v=>{vMap[v.producto]=(vMap[v.producto]||0)+(+v.cantidad||1);});
+  const vL=Object.keys(vMap), vD=Object.values(vMap);
 
-  // Ventas por producto
-  const ventaMap = {};
-  ventas.forEach(v => { ventaMap[v.producto] = (ventaMap[v.producto]||0) + (+v.cantidad||1); });
-  const vLabels = Object.keys(ventaMap);
-  const vData = Object.values(ventaMap);
-
-  if(charts.ventas) charts.ventas.destroy();
-  charts.ventas = new Chart(document.getElementById('chartVentas'), {
-    type: 'bar',
-    data: { labels: vLabels, datasets:[{ data: vData, backgroundColor: colors, borderRadius: 8, borderSkipped: false }] },
-    options: { plugins:{legend:{display:false}}, scales:{ x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6b6b8a',font:{size:11}}}, y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6b6b8a',font:{size:11}}} }, responsive:true }
+  if(charts.v) charts.v.destroy();
+  charts.v = new Chart(document.getElementById('chartVentas'),{
+    type:'bar',
+    data:{labels:vL,datasets:[{data:vD,backgroundColor:C,borderRadius:6,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}}},responsive:true}
   });
 
-  // Stock doughnut
-  const sLabels = productos.map(p => p.nombre);
-  const sData = productos.map(p => +p.cantidad||0);
-  if(charts.stock) charts.stock.destroy();
-  charts.stock = new Chart(document.getElementById('chartStock'), {
-    type: 'doughnut',
-    data: { labels: sLabels, datasets:[{ data: sData, backgroundColor: colors, borderWidth: 0 }] },
-    options: { plugins:{ legend:{ position:'bottom', labels:{ color:'#6b6b8a', padding:10, font:{size:11} } } }, cutout:'65%', responsive:true }
+  if(charts.s) charts.s.destroy();
+  charts.s = new Chart(document.getElementById('chartStock'),{
+    type:'doughnut',
+    data:{labels:productos.map(p=>p.nombre),datasets:[{data:productos.map(p=>+p.cantidad||0),backgroundColor:C,borderWidth:0}]},
+    options:{plugins:{legend:{position:'bottom',labels:{color:'#7A9B87',padding:8,font:{size:10,family:'Jost'}}}},cutout:'62%',responsive:true}
   });
 
-  // Ventas en el tiempo (line)
-  const byDate = {};
-  ventas.forEach(v => { const d = (v.fecha||'').slice(0,10); byDate[d] = (byDate[d]||0)+1; });
-  const dates = Object.keys(byDate).sort();
-  if(charts.linea) charts.linea.destroy();
-  charts.linea = new Chart(document.getElementById('chartLinea'), {
-    type: 'line',
-    data: { labels: dates, datasets:[{
-      label:'Ventas', data: dates.map(d=>byDate[d]),
-      borderColor:'#6c63ff', backgroundColor:'rgba(108,99,255,.08)',
-      fill:true, tension:.4, pointBackgroundColor:'#6c63ff', pointRadius:4
-    }]},
-    options: { plugins:{legend:{display:false}}, scales:{ x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6b6b8a',font:{size:11}}}, y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6b6b8a',font:{size:11}}} }, responsive:true }
+  const byD={};
+  ventas.forEach(v=>{const d=(v.fecha||'').slice(0,10);byD[d]=(byD[d]||0)+1;});
+  const dates=Object.keys(byD).sort();
+  if(charts.l) charts.l.destroy();
+  charts.l = new Chart(document.getElementById('chartLinea'),{
+    type:'line',
+    data:{labels:dates,datasets:[{label:'Ventas',data:dates.map(d=>byD[d]),borderColor:'#C9A84C',backgroundColor:'rgba(201,168,76,.07)',fill:true,tension:.4,pointBackgroundColor:'#C9A84C',pointRadius:4,pointHoverRadius:6}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}}},responsive:true}
   });
 }
 
-// ─── HISTORIAL ───
+// ─── HISTORIAL ───────────────────────────────────────────
 function renderHistorial() {
-  const cont = document.getElementById('historialContainer');
-  if(!historial.length) {
-    cont.innerHTML = `<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p>Sin registros en el historial</p></div>`;
+  const icons={create:'🌿',edit:'✏️',delete:'🗑️',sale:'🛍️'};
+  const bgmap={create:'rgba(45,107,71,.1)',edit:'rgba(201,168,76,.1)',delete:'rgba(192,57,43,.1)',sale:'rgba(26,61,43,.1)'};
+  const w = document.getElementById('histWrap');
+  if(!historial.length){
+    w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p>Sin registros aún</p></div>`;
     return;
   }
-  const icons = { create:'🟢', edit:'🟡', delete:'🔴', sale:'🔵' };
-  const bg = { create:'rgba(67,233,123,.1)', edit:'rgba(255,165,2,.1)', delete:'rgba(255,71,87,.1)', sale:'rgba(108,99,255,.1)' };
-  let html = '<div class="history-list">';
-  [...historial].reverse().forEach(h => {
-    const tipo = h.tipo||'edit';
-    html += `<div class="history-item">
-      <div class="history-icon" style="background:${bg[tipo]||bg.edit}">${icons[tipo]||'📝'}</div>
-      <div class="history-body">
-        <strong>${esc(h.accion||'')}</strong>
-        <small>${esc(h.detalle||'')} &nbsp;·&nbsp; ${esc(h.fecha||'')}</small>
-      </div>
+  let h='<div class="hist-list">';
+  [...historial].reverse().forEach(i=>{
+    const t=i.tipo||'edit';
+    h+=`<div class="hist-item">
+      <div class="hist-icon" style="background:${bgmap[t]||bgmap.edit}">${icons[t]||'📝'}</div>
+      <div class="hist-body"><strong>${esc(i.accion||'')}</strong><small>${esc(i.detalle||'')} &nbsp;·&nbsp; ${esc(i.fecha||'')}</small></div>
     </div>`;
   });
-  html += '</div>';
-  cont.innerHTML = html;
+  h+='</div>';
+  w.innerHTML=h;
 }
 
-// ─── MODAL ───
-function openModal(row) {
-  if(row) {
-    const p = productos.find(x=>x.row===row);
-    document.getElementById('modalTitle').textContent = 'Editar Producto';
-    document.getElementById('editRow').value = row;
-    document.getElementById('fNombre').value = p.nombre;
-    document.getElementById('fCantidad').value = p.cantidad;
+// ─── MODAL ───────────────────────────────────────────────
+function openModal(row){
+  if(row){
+    const p=productos.find(x=>x.row===row);
+    document.getElementById('modalTitulo').textContent='Editar Producto';
+    document.getElementById('editRow').value=row;
+    document.getElementById('fNombre').value=p.nombre;
+    document.getElementById('fCantidad').value=p.cantidad;
   } else {
-    document.getElementById('modalTitle').textContent = 'Nuevo Producto';
-    document.getElementById('editRow').value = '';
-    document.getElementById('fNombre').value = '';
-    document.getElementById('fCantidad').value = '';
+    document.getElementById('modalTitulo').textContent='Nuevo Producto';
+    document.getElementById('editRow').value='';
+    document.getElementById('fNombre').value='';
+    document.getElementById('fCantidad').value='';
   }
   document.getElementById('modal').classList.add('open');
 }
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
-function editProduct(row) { openModal(row); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function editarProducto(row){ openModal(row); }
 
-async function saveProduct() {
+async function guardarProducto(){
   const nombre = document.getElementById('fNombre').value.trim();
   const cantidad = document.getElementById('fCantidad').value;
-  if(!nombre) { toast('Ingresa el nombre del producto', 'warn'); return; }
+  if(!nombre){ toast('Ingresa el nombre del producto','warn'); return; }
   const row = document.getElementById('editRow').value;
-  const action = row ? 'editProducto' : 'addProducto';
-  const payload = { nombre, cantidad, row };
   try {
-    const res = await callSheet(action, payload);
-    toast(row ? 'Producto actualizado ✓' : 'Producto agregado ✓', 'green');
-    closeModal();
-    loadAll();
-  } catch(e) {
-    // demo mode update local
-    if(row) {
-      const p = productos.find(x=>x.row===+row);
-      if(p){ p.nombre=nombre; p.cantidad=cantidad; }
-      toast('Actualizado (modo demo)', 'green');
+    await api({action: row?'editProducto':'addProducto', nombre, cantidad, row});
+    toast(row?'Producto actualizado ✓':'Producto creado ✓','ok');
+    closeModal(); loadAll();
+  } catch {
+    if(row){
+      const p=productos.find(x=>x.row===+row);
+      if(p){p.nombre=nombre;p.cantidad=cantidad;}
     } else {
-      productos.push({row: Date.now(), nombre, cantidad, fecha: new Date().toISOString().slice(0,10)});
-      toast('Agregado (modo demo)', 'green');
+      productos.push({row:Date.now(),nombre,cantidad,fecha:new Date().toISOString().slice(0,10)});
     }
-    historial.push({accion: row?'Producto editado':'Producto creado', detalle:nombre, fecha:new Date().toLocaleString(), tipo: row?'edit':'create'});
-    closeModal(); updateStats(); renderTable();
+    historial.push({accion:row?'Producto editado':'Producto creado',detalle:nombre,fecha:new Date().toLocaleString(),tipo:row?'edit':'create'});
+    toast(row?'Actualizado (demo)':'Creado (demo)','ok');
+    closeModal(); actualizarStats(); renderTabla();
   }
 }
 
-async function deleteProduct(row) {
-  if(!confirm('¿Eliminar este producto?')) return;
-  const p = productos.find(x=>x.row===row);
+async function eliminarProducto(row){
+  const p=productos.find(x=>x.row===row);
+  if(!confirm(`¿Eliminar "${p?.nombre}"?`)) return;
   try {
-    await callSheet('deleteProducto', {row});
-    toast('Producto eliminado', 'red');
-    loadAll();
-  } catch(e) {
-    productos = productos.filter(x=>x.row!==row);
-    historial.push({accion:'Producto eliminado', detalle:p?.nombre||'', fecha:new Date().toLocaleString(), tipo:'delete'});
-    toast('Eliminado (modo demo)', 'red');
-    updateStats(); renderTable();
+    await api({action:'deleteProducto',row});
+    toast('Producto eliminado','warn'); loadAll();
+  } catch {
+    productos=productos.filter(x=>x.row!==row);
+    historial.push({accion:'Producto eliminado',detalle:p?.nombre||'',fecha:new Date().toLocaleString(),tipo:'delete'});
+    toast('Eliminado (demo)','warn'); actualizarStats(); renderTabla();
   }
 }
 
-// ─── TOAST ───
-function toast(msg, type='green') {
-  const colors = {green:'#43e97b', red:'#ff4757', warn:'#ffa502', blue:'#6c63ff'};
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = `<div class="toast-dot" style="background:${colors[type]||colors.green}"></div>${msg}`;
-  document.getElementById('toastContainer').appendChild(t);
-  setTimeout(()=>t.remove(), 3500);
+// ─── TOAST ───────────────────────────────────────────────
+function toast(msg, tipo='ok'){
+  const cols={ok:'#2D6B47',warn:'#C9A84C',err:'#C0392B'};
+  const t=document.createElement('div');
+  t.className='toast';
+  t.innerHTML=`<div class="toast-dot" style="background:${cols[tipo]||cols.ok}"></div>${msg}`;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>t.remove(),3400);
 }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ─── INIT ───
-document.getElementById('modal').addEventListener('click', e => { if(e.target === e.currentTarget) closeModal(); });
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
 loadAll();
 </script>
 </body>
