@@ -623,10 +623,13 @@ function setTab(t) {
   const show = tabCfg[t].addBtn ? '' : 'none';
   document.getElementById('btnAdd').style.display = show;
   document.getElementById('mobileActions').style.display = tabCfg[t].addBtn ? '' : 'none';
-  if(t==='estadisticas') dibujarCharts();
-  if(t==='historial') renderHistorial();
   closeSidebar();
+  // Siempre refresca datos desde el Sheet al cambiar de pestaña
+  loadAll(t);
 }
+
+// tabDestino: pestaña a renderizar luego de cargar datos
+async function loadAll(tabDestino) {
 function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlayBg').classList.add('open'); }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('open'); }
 
@@ -638,7 +641,11 @@ async function api(params) {
   try { return JSON.parse(txt); } catch { return {ok:false,error:txt}; }
 }
 
-async function loadAll() {
+async function loadAll(tabDestino) {
+  // Determinar qué pestaña está activa si no se pasa argumento
+  const tab = tabDestino || ['productos','estadisticas','historial'].find(
+    t => document.getElementById('panel-'+t).classList.contains('active')
+  ) || 'productos';
   try {
     const [pr, vr, hr] = await Promise.all([
       api({action:'getProductos'}),
@@ -653,8 +660,8 @@ async function loadAll() {
     return;
   }
   actualizarStats(); renderTabla();
-  if(document.getElementById('panel-estadisticas').classList.contains('active')) dibujarCharts();
-  if(document.getElementById('panel-historial').classList.contains('active')) renderHistorial();
+  if(tab === 'estadisticas') dibujarCharts();
+  if(tab === 'historial')    renderHistorial();
 }
 
 function demoData() {
