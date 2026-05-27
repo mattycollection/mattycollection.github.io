@@ -764,6 +764,25 @@ function dibujarCharts() {
 }
 
 // ─── HISTORIAL ───────────────────────────────────────────
+function formatFecha(str) {
+  if (!str) return '—';
+  // Si viene en formato ISO (yyyy-MM-ddTHH:mm:ss) sin Z → tratar como local
+  // Si ya viene formateado (dd/MM/yyyy HH:mm) → mostrar tal cual
+  if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
+    // Tiene formato ISO sin zona → interpretarlo como hora local
+    const d = new Date(str.includes('Z') ? str : str + 'Z');
+    // Si tenía Z lo convertimos con offset local; si no tenía Z ya es local
+    const local = str.includes('Z')
+      ? new Date(str)
+      : new Date(str.replace('T',' '));
+    return local.toLocaleDateString('es-ES', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+  return str; // ya viene formateado desde el script
+}
+
 function renderHistorial() {
   const icons={create:'🌿',edit:'✏️',delete:'🗑️',sale:'🛍️'};
   const bgmap={create:'rgba(45,107,71,.1)',edit:'rgba(201,168,76,.1)',delete:'rgba(192,57,43,.1)',sale:'rgba(26,61,43,.1)'};
@@ -774,10 +793,22 @@ function renderHistorial() {
   }
   let h='<div class="hist-list">';
   [...historial].reverse().forEach(i=>{
-    const t=i.tipo||'edit';
+    const t = i.tipo||'edit';
+    // Separar nota del detalle si viene con el patrón — "texto"
+    let detalle = esc(i.detalle||'');
+    let notaHtml = '';
+    const notaMatch = (i.detalle||'').match(/—\s*"(.+)"$/);
+    if(notaMatch){
+      detalle = esc((i.detalle||'').replace(/\s*—\s*".+"$/, ''));
+      notaHtml = `<span style="display:inline-block;margin-top:4px;background:rgba(201,168,76,.12);color:var(--oro-dim);border-radius:5px;padding:2px 8px;font-size:11px;font-style:italic;">📝 ${esc(notaMatch[1])}</span>`;
+    }
     h+=`<div class="hist-item">
       <div class="hist-icon" style="background:${bgmap[t]||bgmap.edit}">${icons[t]||'📝'}</div>
-      <div class="hist-body"><strong>${esc(i.accion||'')}</strong><small>${esc(i.detalle||'')} &nbsp;·&nbsp; ${esc(i.fecha||'')}</small></div>
+      <div class="hist-body">
+        <strong>${esc(i.accion||'')}</strong>
+        <small>${detalle} &nbsp;·&nbsp; ${formatFecha(i.fecha)}</small>
+        ${notaHtml}
+      </div>
     </div>`;
   });
   h+='</div>';
