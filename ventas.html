@@ -3,542 +3,620 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ventas · Registrar</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Matty Collection · Ventas</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f4f8;
-    --surface: #ffffff;
-    --card: #ffffff;
-    --border: #e2e2ec;
-    --accent: #6c63ff;
-    --accent-dark: #5a52e8;
-    --accent2: #ff6584;
-    --accent3: #43e97b;
-    --text: #1a1a2e;
-    --muted: #8888a8;
-    --danger: #ff4757;
-    --warn: #ffa502;
-    --success: #2ed573;
+    --verde:       #1A3D2B;
+    --verde-med:   #1E4D33;
+    --verde-light: #245C3C;
+    --verde-pale:  #2D6B47;
+    --oro:         #C9A84C;
+    --oro-light:   #D4B96A;
+    --oro-dim:     #A8893A;
+    --crema:       #F5F0E8;
+    --crema-dark:  #EDE5D4;
+    --blanco:      #FDFAF5;
+    --texto:       #1A3D2B;
+    --muted:       #7A9B87;
+    --border:      #E2D9C8;
+    --sombra:      rgba(26,61,43,.1);
+    --rojo:        #C0392B;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    background: var(--verde);
+    color: var(--texto);
+    font-family: 'Jost', sans-serif;
     min-height: 100vh;
+    display: flex; flex-direction: column;
   }
 
-  /* TOP BAR */
-  .topbar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 64px;
+  /* ─── HEADER ─── */
+  header {
+    background: var(--verde);
+    padding: 0 36px;
+    height: 72px;
     display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 1px 12px rgba(0,0,0,.06);
-  }
-  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; }
-  .logo span { color: var(--accent); }
-  .topbar-right { display: flex; align-items: center; gap: 14px; }
-  .date-badge {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; padding: 6px 14px;
-    font-size: 13px; color: var(--muted); font-weight: 500;
-  }
-  .counter-badge {
-    background: var(--accent); color: #fff;
-    border-radius: 8px; padding: 6px 14px;
-    font-size: 13px; font-weight: 600;
-  }
-
-  /* LAYOUT */
-  .layout {
-    max-width: 1100px;
-    margin: 32px auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 24px;
-  }
-
-  /* CARD */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 2px 16px rgba(0,0,0,.05);
-  }
-  .card-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    flex-wrap: wrap;
-  }
-  .card-header h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
-  .card-body { padding: 24px; }
-
-  /* FORM */
-  .form-group { margin-bottom: 18px; }
-  label {
-    display: block; font-size: 12px; color: var(--muted);
-    font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
-    margin-bottom: 8px;
-  }
-  .form-control {
-    width: 100%; padding: 12px 16px;
-    border: 1.5px solid var(--border); border-radius: 10px;
-    font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text);
-    background: var(--surface); outline: none; transition: border-color .2s;
-    -webkit-appearance: none;
-  }
-  .form-control:focus { border-color: var(--accent); }
-  select.form-control { cursor: pointer; }
-
-  /* QUANTITY INPUT */
-  .qty-wrap { display: flex; gap: 10px; align-items: center; }
-  .qty-btn {
-    width: 44px; height: 44px; border-radius: 10px;
-    border: 1.5px solid var(--border); background: var(--bg);
-    font-size: 20px; cursor: pointer; display: flex;
-    align-items: center; justify-content: center; color: var(--text);
-    transition: all .15s; flex-shrink: 0;
-  }
-  .qty-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .qty-input {
-    flex: 1; text-align: center;
-    border: 1.5px solid var(--border); border-radius: 10px;
-    padding: 11px; font-size: 18px; font-weight: 700;
-    font-family: 'Syne', sans-serif; color: var(--text);
-    background: var(--surface); outline: none;
-  }
-  .qty-input:focus { border-color: var(--accent); }
-
-  /* PRODUCT CARD PREVIEW */
-  .product-preview {
-    background: var(--bg); border-radius: 12px;
-    padding: 16px; margin-bottom: 18px;
-    display: none; border: 1.5px solid var(--border);
-  }
-  .product-preview.show { display: block; }
-  .preview-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-  .preview-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; margin: 4px 0 10px; }
-  .preview-stock { display: flex; gap: 12px; }
-  .preview-stock-item { font-size: 13px; }
-  .preview-stock-item strong { font-weight: 700; color: var(--accent); }
-
-  /* SUBMIT BTN */
-  .btn-submit {
-    width: 100%; padding: 15px;
-    background: var(--accent); color: #fff;
-    border: none; border-radius: 12px;
-    font-size: 16px; font-weight: 700;
-    font-family: 'Syne', sans-serif;
-    cursor: pointer; transition: all .2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    letter-spacing: .01em;
-  }
-  .btn-submit:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,99,255,.3); }
-  .btn-submit:active { transform: translateY(0); }
-  .btn-submit:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
-
-  /* MINI STATS */
-  .mini-stats {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 12px; margin-bottom: 20px;
-  }
-  .mini-stat {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px;
-    text-align: center;
-  }
-  .mini-stat-val { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; }
-  .mini-stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
-
-  /* RECENT SALES */
-  .sales-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; }
-  .sale-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 16px;
-    background: var(--bg); border-radius: 10px;
-    border: 1px solid var(--border);
-    animation: fadeIn .3s ease;
-  }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-  .sale-avatar {
-    width: 36px; height: 36px; border-radius: 9px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; color: #fff;
+    border-bottom: 1px solid rgba(201,168,76,.2);
     flex-shrink: 0;
   }
+  .header-brand { display: flex; align-items: center; gap: 14px; }
+  .header-monogram {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1.5px solid var(--oro-dim);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px; font-weight: 600; color: var(--oro);
+    letter-spacing: .05em;
+  }
+  .header-text {}
+  .header-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 600; color: var(--crema);
+    letter-spacing: .08em; text-transform: uppercase; line-height: 1;
+  }
+  .header-sub {
+    font-size: 10px; color: var(--oro-dim);
+    letter-spacing: .14em; text-transform: uppercase; margin-top: 2px;
+  }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .hbadge {
+    padding: 6px 16px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .hbadge-gold { background: rgba(201,168,76,.2); color: var(--oro-light); }
+  .hbadge-date { color: rgba(245,240,232,.4); font-size: 12px; }
+
+  /* ─── BODY ─── */
+  .page-body {
+    flex: 1;
+    background: var(--crema);
+    border-radius: 20px 20px 0 0;
+    margin-top: 0;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  /* ─── FORMULARIO ─── */
+  .form-col {
+    padding: 36px 36px 36px 36px;
+    border-right: 1px solid var(--crema-dark);
+    overflow-y: auto;
+  }
+  .form-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 600; color: var(--verde);
+    margin-bottom: 4px;
+  }
+  .form-section-sub {
+    font-size: 11px; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase; margin-bottom: 32px;
+  }
+
+  .form-group { margin-bottom: 22px; }
+  label {
+    display: block; font-size: 10px; color: var(--muted);
+    font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    margin-bottom: 9px;
+  }
+  .inp {
+    width: 100%; padding: 13px 16px;
+    background: var(--blanco); border: 1.5px solid var(--border);
+    border-radius: 9px; color: var(--texto); font-size: 14px;
+    font-family: 'Jost', sans-serif; outline: none; transition: border-color .2s;
+    -webkit-appearance: none;
+  }
+  .inp:focus { border-color: var(--oro-dim); }
+  select.inp { cursor: pointer; }
+
+  /* PREVIEW PRODUCTO */
+  .producto-preview {
+    background: var(--verde);
+    border-radius: 11px; padding: 20px;
+    margin-bottom: 22px;
+    display: none;
+    position: relative; overflow: hidden;
+  }
+  .producto-preview::before {
+    content: '';
+    position: absolute; top: -20px; right: -20px;
+    width: 100px; height: 100px; border-radius: 50%;
+    background: rgba(201,168,76,.08);
+  }
+  .producto-preview.show { display: block; }
+  .prev-label {
+    font-size: 9px; color: var(--oro-dim); letter-spacing: .15em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .prev-nombre {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 600; color: var(--crema);
+    margin-bottom: 10px; line-height: 1.2;
+  }
+  .prev-stock {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: rgba(245,240,232,.6);
+  }
+  .prev-stock strong {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; color: var(--oro); font-weight: 600;
+  }
+
+  /* CANTIDAD */
+  .qty-control {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .qty-btn {
+    width: 46px; height: 46px; border-radius: 9px;
+    border: 1.5px solid var(--border); background: var(--blanco);
+    font-size: 22px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; color: var(--verde);
+    transition: all .15s; flex-shrink: 0;
+    font-weight: 300;
+  }
+  .qty-btn:hover {
+    background: var(--verde); border-color: var(--verde);
+    color: var(--crema); transform: scale(1.05);
+  }
+  .qty-num {
+    flex: 1; text-align: center;
+    background: var(--blanco); border: 1.5px solid var(--border);
+    border-radius: 9px; padding: 12px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 600; color: var(--verde);
+    outline: none; transition: border-color .2s;
+  }
+  .qty-num:focus { border-color: var(--oro-dim); }
+
+  .btn-registrar {
+    width: 100%; padding: 16px;
+    background: var(--verde); color: var(--crema);
+    border: none; border-radius: 10px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 600; letter-spacing: .06em;
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 8px;
+  }
+  .btn-registrar:hover {
+    background: var(--verde-pale);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--sombra);
+  }
+  .btn-registrar:disabled {
+    background: var(--crema-dark); color: var(--muted);
+    cursor: not-allowed; transform: none; box-shadow: none;
+  }
+  .btn-registrar .oro-text { color: var(--oro); }
+
+  /* ─── PANEL DERECHO ─── */
+  .right-col {
+    background: var(--blanco);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .right-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--crema-dark);
+    border-bottom: 1px solid var(--crema-dark);
+    flex-shrink: 0;
+  }
+  .r-stat {
+    background: var(--blanco); padding: 20px;
+    text-align: center;
+  }
+  .r-stat-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px; font-weight: 700; color: var(--verde);
+    line-height: 1;
+  }
+  .r-stat-label {
+    font-size: 10px; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase; margin-top: 4px;
+  }
+
+  .right-header {
+    padding: 20px 22px 14px;
+    border-bottom: 1px solid var(--crema-dark);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .right-header h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 600; color: var(--verde);
+  }
+  .right-header button {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 13px;
+    font-family: 'Jost', sans-serif;
+    transition: color .2s;
+  }
+  .right-header button:hover { color: var(--verde); }
+
+  .sales-list {
+    flex: 1; overflow-y: auto; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .sale-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--crema); border-radius: 9px;
+    border: 1px solid var(--crema-dark);
+    animation: fadeSlide .3s ease;
+  }
+  @keyframes fadeSlide { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
+  .sale-av {
+    width: 38px; height: 38px; border-radius: 8px;
+    background: var(--verde); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700; font-size: 15px; color: var(--oro);
+  }
   .sale-body { flex: 1; min-width: 0; }
-  .sale-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sale-time { font-size: 11px; color: var(--muted); }
-  .sale-qty {
-    background: rgba(108,99,255,.1); color: var(--accent);
-    font-weight: 700; font-family: 'Syne', sans-serif;
-    border-radius: 7px; padding: 4px 10px; font-size: 13px;
+  .sale-name {
+    font-size: 13px; font-weight: 500; color: var(--verde);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sale-time { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .sale-badge {
+    background: rgba(201,168,76,.15); color: var(--oro-dim);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600; font-size: 15px;
+    padding: 4px 12px; border-radius: 6px;
     white-space: nowrap;
   }
 
-  /* SUCCESS OVERLAY */
+  .empty-right {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--muted); gap: 10px; padding: 40px;
+    text-align: center;
+  }
+  .empty-right svg { width: 42px; height: 42px; opacity: .3; }
+  .empty-right p { font-size: 13px; line-height: 1.5; }
+
+  /* ─── SUCCESS ─── */
   .success-overlay {
     position: fixed; inset: 0; z-index: 999;
-    background: rgba(255,255,255,.95);
+    background: rgba(26,61,43,.92);
     display: none; align-items: center; justify-content: center;
-    flex-direction: column; gap: 16px;
-    animation: fadeInOverlay .25s ease;
+    flex-direction: column; gap: 18px;
   }
   .success-overlay.show { display: flex; }
-  @keyframes fadeInOverlay { from{opacity:0} to{opacity:1} }
-  .success-icon {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: linear-gradient(135deg, #43e97b, #38f9d7);
+  .success-circle {
+    width: 90px; height: 90px; border-radius: 50%;
+    border: 2px solid var(--oro);
     display: flex; align-items: center; justify-content: center;
-    font-size: 36px;
-    animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+    font-size: 42px;
+    animation: popIn .45s cubic-bezier(.34,1.56,.64,1);
   }
-  @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
-  .success-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: var(--text); }
-  .success-sub { color: var(--muted); font-size: 15px; text-align: center; }
+  @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  .success-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 600; color: var(--crema);
+    letter-spacing: .06em;
+  }
+  .success-sub { color: var(--oro-dim); font-size: 14px; letter-spacing: .04em; }
 
-  /* TOAST */
-  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 998; display: flex; flex-direction: column; gap: 10px; }
+  /* ─── TOAST ─── */
+  .toasts { position: fixed; bottom: 24px; right: 24px; z-index: 998; display: flex; flex-direction: column; gap: 10px; }
   .toast {
-    background: #1a1a2e; color: #fff;
-    border-radius: 10px; padding: 12px 18px;
-    font-size: 13px; min-width: 220px;
+    background: var(--verde); color: var(--crema);
+    border: 1px solid rgba(201,168,76,.3);
+    border-radius: 9px; padding: 12px 18px;
+    font-size: 13px; min-width: 230px;
     display: flex; align-items: center; gap: 10px;
     animation: toastIn .3s ease;
-    box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    box-shadow: 0 8px 28px rgba(26,61,43,.3);
   }
   @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
-  .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .t-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-  /* EMPTY */
-  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
-  .empty svg { width: 40px; height: 40px; margin-bottom: 10px; opacity: .4; }
-  .empty p { font-size: 13px; }
-
-  /* HAMBURGER responsive */
-  .mobile-topbar-title { display: none; font-family: 'Syne', sans-serif; font-weight: 700; }
-
-  @media (max-width: 800px) {
-    .layout { grid-template-columns: 1fr; margin: 16px auto; padding: 0 12px; gap: 16px; }
-    .topbar { padding: 0 16px; }
-    .card-body { padding: 18px; }
-    .date-badge { display: none; }
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 820px) {
+    header { padding: 0 16px; }
+    .page-body {
+      grid-template-columns: 1fr;
+      border-radius: 16px 16px 0 0;
+    }
+    .form-col { border-right: none; border-bottom: 1px solid var(--crema-dark); padding: 24px 20px; }
+    .right-col { max-height: 420px; }
+    .hbadge-date { display: none; }
   }
   @media (max-width: 480px) {
-    .logo { font-size: 15px; }
-    .mini-stats { grid-template-columns: 1fr 1fr; }
+    header { height: 60px; }
+    .header-title { font-size: 15px; }
+    .form-section-title { font-size: 20px; }
+    .btn-registrar { font-size: 16px; padding: 14px; }
   }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="logo">⬡ <span>VENTAS</span> · Registro</div>
-  <div class="topbar-right">
-    <div class="date-badge" id="dateDisplay">—</div>
-    <div class="counter-badge" id="sessionCounter">0 ventas hoy</div>
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <div class="header-monogram">MC</div>
+    <div class="header-text">
+      <div class="header-title">Matty Collection</div>
+      <div class="header-sub">Registro de Ventas</div>
+    </div>
   </div>
-</div>
+  <div class="header-right">
+    <span class="hbadge-date" id="fechaHoy"></span>
+    <span class="hbadge hbadge-gold" id="cuentaHoy">0 ventas hoy</span>
+  </div>
+</header>
 
-<!-- LAYOUT -->
-<div class="layout">
+<!-- BODY -->
+<div class="page-body">
 
   <!-- FORMULARIO -->
-  <div>
-    <div class="card">
-      <div class="card-header">
-        <h2>Registrar Nueva Venta</h2>
-        <span style="font-size:12px;color:var(--muted)">Selecciona producto y cantidad</span>
-      </div>
-      <div class="card-body">
+  <div class="form-col">
+    <div class="form-section-title">Nueva Venta</div>
+    <div class="form-section-sub">Selecciona el producto y la cantidad</div>
 
-        <div class="form-group">
-          <label>Producto</label>
-          <select class="form-control" id="selProducto" onchange="onProductoChange()">
-            <option value="">Cargando productos…</option>
-          </select>
-        </div>
+    <div class="form-group">
+      <label>Producto</label>
+      <select class="inp" id="selProd" onchange="onProdChange()">
+        <option value="">Cargando productos…</option>
+      </select>
+    </div>
 
-        <!-- PREVIEW -->
-        <div class="product-preview" id="preview">
-          <div class="preview-label">Seleccionado</div>
-          <div class="preview-name" id="previewNombre">—</div>
-          <div class="preview-stock">
-            <div class="preview-stock-item">Stock disponible: <strong id="previewStock">—</strong></div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Cantidad Vendida</label>
-          <div class="qty-wrap">
-            <button class="qty-btn" onclick="changeQty(-1)">−</button>
-            <input type="number" class="qty-input" id="cantidad" value="1" min="1">
-            <button class="qty-btn" onclick="changeQty(1)">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Nota (opcional)</label>
-          <input class="form-control" id="nota" placeholder="Ej: cliente frecuente, descuento…">
-        </div>
-
-        <button class="btn-submit" id="btnRegistrar" onclick="registrarVenta()">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          Registrar Venta
-        </button>
-
+    <div class="producto-preview" id="preview">
+      <div class="prev-label">Artículo seleccionado</div>
+      <div class="prev-nombre" id="prevNombre">—</div>
+      <div class="prev-stock">
+        Stock disponible: <strong id="prevStock">—</strong>&nbsp;unidades
       </div>
     </div>
+
+    <div class="form-group">
+      <label>Cantidad Vendida</label>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <input type="number" class="qty-num" id="cantidad" value="1" min="1">
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Nota (opcional)</label>
+      <input class="inp" id="nota" placeholder="Cliente frecuente, descuento aplicado…">
+    </div>
+
+    <button class="btn-registrar" id="btnReg" onclick="registrarVenta()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Registrar <span class="oro-text">· Venta</span>
+    </button>
   </div>
 
   <!-- PANEL DERECHO -->
-  <div style="display:flex;flex-direction:column;gap:16px">
-
-    <!-- MINI STATS -->
-    <div class="card">
-      <div class="card-body" style="padding:18px">
-        <div class="mini-stats">
-          <div class="mini-stat">
-            <div class="mini-stat-val" id="statHoy">0</div>
-            <div class="mini-stat-label">Ventas Hoy</div>
-          </div>
-          <div class="mini-stat">
-            <div class="mini-stat-val" id="statUnidades">0</div>
-            <div class="mini-stat-label">Unidades</div>
-          </div>
-        </div>
+  <div class="right-col">
+    <div class="right-stats">
+      <div class="r-stat">
+        <div class="r-stat-val" id="statVentas">0</div>
+        <div class="r-stat-label">Ventas Hoy</div>
+      </div>
+      <div class="r-stat">
+        <div class="r-stat-val" id="statUnidades">0</div>
+        <div class="r-stat-label">Unidades</div>
       </div>
     </div>
 
-    <!-- RECIENTES -->
-    <div class="card" style="flex:1">
-      <div class="card-header">
-        <h2>Ventas Recientes</h2>
-        <button onclick="loadData()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px">↻ Recargar</button>
-      </div>
-      <div class="card-body" style="padding:16px">
-        <div id="recentList">
-          <div class="empty">
-            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-            <p>Las ventas aparecerán aquí</p>
-          </div>
-        </div>
+    <div class="right-header">
+      <h3>Ventas Recientes</h3>
+      <button onclick="cargarDatos()">↻ Recargar</button>
+    </div>
+
+    <div class="sales-list" id="salesList">
+      <div class="empty-right">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <p>Las ventas registradas<br>aparecerán aquí</p>
       </div>
     </div>
   </div>
-</div>
 
-<!-- SUCCESS OVERLAY -->
+</div><!-- /page-body -->
+
+<!-- SUCCESS -->
 <div class="success-overlay" id="successOverlay">
-  <div class="success-icon">✓</div>
+  <div class="success-circle">✓</div>
   <div class="success-title">¡Venta Registrada!</div>
   <div class="success-sub" id="successMsg">Guardado correctamente</div>
 </div>
 
-<div class="toast-container" id="toastContainer"></div>
+<div class="toasts" id="toasts"></div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
 
-let productos = [];
-let recentSales = [];
-let sessionCount = 0;
-let sessionUnits = 0;
+let productos = [], ventasRecientes = [];
+let ventasHoy = 0, unidadesHoy = 0;
 
-// ─── DATE ───
-function updateDate() {
-  const now = new Date();
-  const opts = { weekday:'long', day:'numeric', month:'long' };
-  document.getElementById('dateDisplay').textContent = now.toLocaleDateString('es-ES', opts);
-}
-updateDate();
+// ─── FECHA ─────────────────────────────────────────
+(function setFecha(){
+  const opts = {weekday:'long',day:'numeric',month:'long',year:'numeric'};
+  document.getElementById('fechaHoy').textContent =
+    new Date().toLocaleDateString('es-ES', opts);
+})();
 
-// ─── LOAD ───
-async function callSheet(action, payload = {}) {
-  const params = new URLSearchParams({action, ...payload});
-  const res = await fetch(SCRIPT_URL + '?' + params);
-  const text = await res.text();
-  try { return JSON.parse(text); } catch { return {ok:false, error:text}; }
+// ─── API ───────────────────────────────────────────
+async function api(params){
+  const qs = new URLSearchParams(params);
+  const r = await fetch(URL_SCRIPT+'?'+qs);
+  const txt = await r.text();
+  try { return JSON.parse(txt); } catch { return {ok:false}; }
 }
 
-async function loadData() {
+async function cargarDatos(){
   try {
-    const [pRes, vRes] = await Promise.all([
-      callSheet('getProductos'),
-      callSheet('getVentas'),
+    const [pr, vr] = await Promise.all([
+      api({action:'getProductos'}),
+      api({action:'getVentas'}),
     ]);
-    productos = pRes.data || [];
-    const allVentas = vRes.data || [];
-    const today = new Date().toISOString().slice(0,10);
-    recentSales = allVentas.slice(-20).reverse();
-    const todaySales = allVentas.filter(v => (v.fecha||'').startsWith(today));
-    sessionCount = todaySales.length;
-    sessionUnits = todaySales.reduce((a,b) => a + (+b.cantidad||1), 0);
-    updateUI();
-  } catch(e) {
-    loadDemoData();
+    productos = pr.data || [];
+    const todas = vr.data || [];
+    const hoy = new Date().toISOString().slice(0,10);
+    const deHoy = todas.filter(v=>(v.fecha||'').startsWith(hoy));
+    ventasHoy = deHoy.length;
+    unidadesHoy = deHoy.reduce((a,b)=>a+(+b.cantidad||1),0);
+    ventasRecientes = todas.slice(-20).reverse();
+    actualizarUI();
+  } catch {
+    demoDatos();
   }
 }
 
-function loadDemoData() {
+function demoDatos(){
   productos = [
-    {row:2, nombre:'Camiseta Negra M', cantidad:45},
-    {row:3, nombre:'Pantalón Slim Fit', cantidad:28},
-    {row:4, nombre:'Zapatillas Running', cantidad:7},
-    {row:5, nombre:'Gorra Azul', cantidad:62},
-    {row:6, nombre:'Bolso Cuero', cantidad:3},
+    {row:2,nombre:'Vestido Floral S',cantidad:34},
+    {row:3,nombre:'Blusa Lino Beige M',cantidad:22},
+    {row:4,nombre:'Pantalón Palazzo L',cantidad:8},
+    {row:5,nombre:'Cartera Tejida',cantidad:45},
+    {row:6,nombre:'Sandalias Doradas 38',cantidad:3},
+    {row:7,nombre:'Set Aretes Perla',cantidad:60},
   ];
-  recentSales = [
-    {producto:'Camiseta Negra M', cantidad:2, fecha:new Date().toISOString(), nota:''},
-    {producto:'Gorra Azul', cantidad:5, fecha:new Date().toISOString(), nota:'cliente frecuente'},
+  ventasRecientes = [
+    {producto:'Set Aretes Perla',cantidad:3,fecha:new Date().toISOString(),nota:''},
+    {producto:'Cartera Tejida',cantidad:2,fecha:new Date().toISOString(),nota:'cliente frecuente'},
   ];
-  updateUI();
-  toast('Modo demo activo — conecta tu Google Sheet', 'warn');
+  ventasHoy = ventasRecientes.length;
+  unidadesHoy = 5;
+  actualizarUI();
+  toast('Modo demo — conecta tu Google Script','warn');
 }
 
-function updateUI() {
-  // Select options
-  const sel = document.getElementById('selProducto');
-  sel.innerHTML = '<option value="">— Selecciona un producto —</option>';
-  productos.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.row;
-    opt.textContent = `${p.nombre}  (${p.cantidad} en stock)`;
-    opt.dataset.nombre = p.nombre;
-    opt.dataset.stock = p.cantidad;
-    sel.appendChild(opt);
+function actualizarUI(){
+  // Populate select
+  const sel = document.getElementById('selProd');
+  sel.innerHTML = '<option value="">— Selecciona un artículo —</option>';
+  productos.forEach(p=>{
+    const o = document.createElement('option');
+    o.value = p.row;
+    o.textContent = `${p.nombre}  ·  ${p.cantidad} en stock`;
+    o.dataset.nombre = p.nombre;
+    o.dataset.stock  = p.cantidad;
+    sel.appendChild(o);
   });
-  onProductoChange();
-  renderRecent();
-  updateCounters();
+  onProdChange();
+  renderSales();
+  actualizarContadores();
 }
 
-function updateCounters() {
-  document.getElementById('statHoy').textContent = sessionCount;
-  document.getElementById('statUnidades').textContent = sessionUnits;
-  document.getElementById('sessionCounter').textContent = `${sessionCount} venta${sessionCount!==1?'s':''} hoy`;
+function actualizarContadores(){
+  document.getElementById('statVentas').textContent   = ventasHoy;
+  document.getElementById('statUnidades').textContent = unidadesHoy;
+  document.getElementById('cuentaHoy').textContent    = `${ventasHoy} venta${ventasHoy!==1?'s':''} hoy`;
 }
 
-function onProductoChange() {
-  const sel = document.getElementById('selProducto');
-  const opt = sel.selectedOptions[0];
-  const preview = document.getElementById('preview');
-  if(opt && opt.value) {
-    document.getElementById('previewNombre').textContent = opt.dataset.nombre;
-    document.getElementById('previewStock').textContent = opt.dataset.stock + ' und';
-    preview.classList.add('show');
-    const stock = +opt.dataset.stock;
-    document.getElementById('cantidad').max = stock;
+function onProdChange(){
+  const sel  = document.getElementById('selProd');
+  const opt  = sel.selectedOptions[0];
+  const prev = document.getElementById('preview');
+  if(opt && opt.value){
+    document.getElementById('prevNombre').textContent = opt.dataset.nombre;
+    document.getElementById('prevStock').textContent  = opt.dataset.stock;
+    prev.classList.add('show');
+    document.getElementById('cantidad').max = +opt.dataset.stock;
   } else {
-    preview.classList.remove('show');
+    prev.classList.remove('show');
   }
 }
 
-function changeQty(delta) {
-  const input = document.getElementById('cantidad');
-  const val = Math.max(1, (+input.value||1) + delta);
-  input.value = val;
+function changeQty(d){
+  const inp = document.getElementById('cantidad');
+  inp.value = Math.max(1, (+inp.value||1)+d);
 }
 
-// ─── REGISTRAR ───
-async function registrarVenta() {
-  const sel = document.getElementById('selProducto');
+// ─── REGISTRAR ─────────────────────────────────────
+async function registrarVenta(){
+  const sel = document.getElementById('selProd');
   const opt = sel.selectedOptions[0];
-  if(!opt || !opt.value) { toast('Selecciona un producto', 'warn'); return; }
-  const cantidad = +document.getElementById('cantidad').value || 1;
-  const nota = document.getElementById('nota').value.trim();
-  const nombre = opt.dataset.nombre;
-  const stock = +opt.dataset.stock;
-  if(cantidad > stock) { toast(`Stock insuficiente (${stock} disponibles)`, 'red'); return; }
+  if(!opt||!opt.value){ toast('Selecciona un artículo','warn'); return; }
+  const cantidad = +document.getElementById('cantidad').value||1;
+  const nota     = document.getElementById('nota').value.trim();
+  const nombre   = opt.dataset.nombre;
+  const stock    = +opt.dataset.stock;
+  if(cantidad > stock){ toast(`Solo hay ${stock} unidades disponibles`,'err'); return; }
 
-  const btn = document.getElementById('btnRegistrar');
-  btn.disabled = true; btn.textContent = 'Guardando…';
+  const btn = document.getElementById('btnReg');
+  btn.disabled = true;
+  btn.innerHTML = 'Guardando…';
 
   try {
-    await callSheet('addVenta', {
-      nombre,
-      cantidad,
-      nota,
-      row: opt.value
-    });
-    onSuccess(nombre, cantidad);
-  } catch(e) {
-    // Demo mode
-    const p = productos.find(x=>x.row===+opt.value);
-    if(p) p.cantidad = Math.max(0, p.cantidad - cantidad);
-    recentSales.unshift({producto:nombre, cantidad, fecha:new Date().toISOString(), nota});
-    sessionCount++; sessionUnits += cantidad;
-    onSuccess(nombre, cantidad);
-    // Re-populate select
-    updateUI();
-    document.getElementById('selProducto').value = '';
-    onProductoChange();
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Registrar Venta`;
-  }
+    await api({action:'addVenta', nombre, cantidad, nota, row: opt.value});
+  } catch {}
+
+  // actualizar local
+  const p = productos.find(x=>x.row===+opt.value);
+  if(p) p.cantidad = Math.max(0, p.cantidad-cantidad);
+  ventasRecientes.unshift({producto:nombre, cantidad, fecha:new Date().toISOString(), nota});
+  ventasHoy++; unidadesHoy += cantidad;
+
+  onExito(nombre, cantidad);
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    Registrar <span class="oro-text">· Venta</span>`;
 }
 
-function onSuccess(nombre, cantidad) {
-  document.getElementById('successMsg').textContent = `${cantidad}× ${nombre} registrado correctamente`;
-  const overlay = document.getElementById('successOverlay');
-  overlay.classList.add('show');
-  setTimeout(() => {
-    overlay.classList.remove('show');
-    // Reset form
-    document.getElementById('selProducto').value = '';
-    document.getElementById('cantidad').value = 1;
-    document.getElementById('nota').value = '';
+function onExito(nombre, cantidad){
+  document.getElementById('successMsg').textContent = `${cantidad}× ${nombre}`;
+  const ov = document.getElementById('successOverlay');
+  ov.classList.add('show');
+  setTimeout(()=>{
+    ov.classList.remove('show');
+    document.getElementById('selProd').value='';
+    document.getElementById('cantidad').value=1;
+    document.getElementById('nota').value='';
     document.getElementById('preview').classList.remove('show');
+    actualizarUI();
   }, 1800);
-  renderRecent();
-  updateCounters();
 }
 
-function renderRecent() {
-  const cont = document.getElementById('recentList');
-  if(!recentSales.length) {
-    cont.innerHTML = `<div class="empty"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><p>Las ventas aparecerán aquí</p></div>`;
+function renderSales(){
+  const cont = document.getElementById('salesList');
+  if(!ventasRecientes.length){
+    cont.innerHTML=`<div class="empty-right"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><p>Las ventas registradas<br>aparecerán aquí</p></div>`;
     return;
   }
-  let html = '<div class="sales-list">';
-  recentSales.slice(0,15).forEach(v => {
-    const initial = (v.producto||'?')[0].toUpperCase();
-    const t = v.fecha ? new Date(v.fecha).toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}) : '—';
-    html += `<div class="sale-item">
-      <div class="sale-avatar">${initial}</div>
+  let h='';
+  ventasRecientes.slice(0,15).forEach(v=>{
+    const ini = (v.producto||'?')[0].toUpperCase();
+    const hora = v.fecha ? new Date(v.fecha).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '—';
+    h+=`<div class="sale-item">
+      <div class="sale-av">${ini}</div>
       <div class="sale-body">
         <div class="sale-name">${esc(v.producto||'')}</div>
-        <div class="sale-time">${t}${v.nota?' · '+esc(v.nota):''}</div>
+        <div class="sale-time">${hora}${v.nota?' · '+esc(v.nota):''}</div>
       </div>
-      <div class="sale-qty">×${v.cantidad||1}</div>
+      <div class="sale-badge">×${v.cantidad||1}</div>
     </div>`;
   });
-  html += '</div>';
-  cont.innerHTML = html;
+  cont.innerHTML=h;
 }
 
-function toast(msg, type='green') {
-  const colors = {green:'#43e97b', red:'#ff4757', warn:'#ffa502'};
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = `<div class="toast-dot" style="background:${colors[type]||colors.green}"></div>${msg}`;
-  document.getElementById('toastContainer').appendChild(t);
-  setTimeout(()=>t.remove(), 3500);
+function toast(msg,tipo='ok'){
+  const cols={ok:'#2D6B47',warn:'#C9A84C',err:'#C0392B'};
+  const t=document.createElement('div');
+  t.className='toast';
+  t.innerHTML=`<div class="t-dot" style="background:${cols[tipo]||cols.ok}"></div>${msg}`;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>t.remove(),3400);
 }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-loadData();
+cargarDatos();
 </script>
 </body>
 </html>
