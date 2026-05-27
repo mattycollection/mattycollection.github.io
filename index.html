@@ -1,0 +1,19 @@
+<form id="formulario">
+  <input type="text" id="nombre">
+  <button type="submit">Guardar</button>
+</form>
+
+<script>
+document.getElementById("formulario").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    await fetch("https://script.google.com/macros/s/AKfycbyJCL9AKAwI97ieB_qpV93f4notjMwGI0DWrAx2gzCw161D_XIgIIc20MO0uhWzlIe9Lw/exec", {
+        method: "POST",
+        body: JSON.stringify({
+            nombre: document.getElementById("nombre").value
+        })
+    });
+
+    alert("Guardado");
+});
+</script>
