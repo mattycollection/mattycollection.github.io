@@ -654,7 +654,10 @@ async function registrarVenta(){
   // Actualizar local solo si el servidor confirmó
   const p = productos.find(x=>x.row===+opt.value);
   if(p) p.cantidad = Math.max(0, p.cantidad-cantidad);
-  ventasRecientes.unshift({producto:nombre, cantidad, fecha:new Date().toISOString(), nota});
+  // Guardar fecha como ISO local (sin Z) para que parseFechaLocal la trate correctamente
+  const ahora = new Date();
+  const fechaLocal = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}T${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}:${String(ahora.getSeconds()).padStart(2,'0')}`;
+  ventasRecientes.unshift({producto:nombre, cantidad, fecha:fechaLocal, nota});
   ventasHoy++; unidadesHoy += cantidad;
 
   onExito(nombre, cantidad);
@@ -678,6 +681,15 @@ function onExito(nombre, cantidad){
   }, 1800);
 }
 
+function parseFechaLocal(str) {
+  if (!str) return null;
+  // ISO sin Z → tratar como hora local (el script ya la guarda en zona local)
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(str) && !str.endsWith('Z')) {
+    return new Date(str.replace('T', ' '));
+  }
+  return new Date(str);
+}
+
 function renderSales(){
   const cont = document.getElementById('salesList');
   if(!ventasRecientes.length){
@@ -686,8 +698,9 @@ function renderSales(){
   }
   let h='';
   ventasRecientes.slice(0,15).forEach(v=>{
-    const ini = (v.producto||'?')[0].toUpperCase();
-    const hora = v.fecha ? new Date(v.fecha).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '—';
+    const ini  = (v.producto||'?')[0].toUpperCase();
+    const d    = parseFechaLocal(v.fecha);
+    const hora = d ? d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '—';
     h+=`<div class="sale-item">
       <div class="sale-av">${ini}</div>
       <div class="sale-body">
@@ -713,7 +726,7 @@ function setEstadoConexion(conectado){
   }
 }
 
-
+function toast(msg,tipo='ok'){
   const cols={ok:'#2D6B47',warn:'#C9A84C',err:'#C0392B'};
   const t=document.createElement('div');
   t.className='toast';
