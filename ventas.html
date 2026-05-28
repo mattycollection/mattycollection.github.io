@@ -170,7 +170,6 @@
     font-family: 'Cormorant Garamond', serif;
     font-size: 28px; font-weight: 600; color: var(--verde);
     outline: none; transition: border-color .2s;
-    width: 100px;
   }
   .qty-num:focus { border-color: var(--oro-dim); }
 
@@ -409,6 +408,7 @@
       <div class="prev-nombre" id="prevNombre">—</div>
       <div class="prev-stock">
         Stock disponible: <strong id="prevStock">—</strong>&nbsp;unidades
+        &nbsp;·&nbsp; Precio: <strong id="prevPrecio" style="color:var(--oro)">—</strong>
       </div>
     </div>
 
@@ -558,12 +558,12 @@ async function refrescarProductos(){
 
 function demoDatos(){
   productos = [
-    {row:2,nombre:'Vestido Floral S',cantidad:34},
-    {row:3,nombre:'Blusa Lino Beige M',cantidad:22},
-    {row:4,nombre:'Pantalón Palazzo L',cantidad:8},
-    {row:5,nombre:'Cartera Tejida',cantidad:45},
-    {row:6,nombre:'Sandalias Doradas 38',cantidad:3},
-    {row:7,nombre:'Set Aretes Perla',cantidad:60},
+    {row:2,nombre:'Vestido Floral S',cantidad:34,precio:1800},
+    {row:3,nombre:'Blusa Lino Beige M',cantidad:22,precio:980},
+    {row:4,nombre:'Pantalón Palazzo L',cantidad:8,precio:1100},
+    {row:5,nombre:'Cartera Tejida',cantidad:45,precio:750},
+    {row:6,nombre:'Sandalias Doradas 38',cantidad:3,precio:1650},
+    {row:7,nombre:'Set Aretes Perla',cantidad:60,precio:350},
   ];
   ventasRecientes = [
     {producto:'Set Aretes Perla',cantidad:3,fecha:new Date().toISOString(),nota:''},
@@ -576,15 +576,16 @@ function demoDatos(){
 }
 
 function actualizarUI(){
-  // Populate select
   const sel = document.getElementById('selProd');
   sel.innerHTML = '<option value="">— Selecciona un artículo —</option>';
   productos.forEach(p=>{
     const o = document.createElement('option');
     o.value = p.row;
-    o.textContent = `${p.nombre}  ·  ${p.cantidad} en stock`;
+    const precioTxt = +p.precio ? `  RD$${(+p.precio).toLocaleString('es-DO')}` : '';
+    o.textContent = `${p.nombre}  ·  ${p.cantidad} en stock${precioTxt}`;
     o.dataset.nombre = p.nombre;
     o.dataset.stock  = p.cantidad;
+    o.dataset.precio = p.precio || 0;
     sel.appendChild(o);
   });
   onProdChange();
@@ -607,6 +608,10 @@ function onProdChange(){
   if(opt && opt.value){
     document.getElementById('prevNombre').textContent = opt.dataset.nombre;
     document.getElementById('prevStock').textContent  = opt.dataset.stock;
+    const precio = +opt.dataset.precio;
+    document.getElementById('prevPrecio').textContent = precio
+      ? 'RD$' + precio.toLocaleString('es-DO')
+      : 'Sin precio';
     prev.classList.add('show');
     document.getElementById('cantidad').max = +opt.dataset.stock;
   } else {
@@ -683,10 +688,12 @@ function onExito(nombre, cantidad){
 
 function parseFechaLocal(str) {
   if (!str) return null;
-  // ISO sin Z → tratar como hora local (el script ya la guarda en zona local)
+  // Formato ISO sin Z (guardado por el script como hora local): 2026-05-27T15:40:33
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(str) && !str.endsWith('Z')) {
+    // Reemplazar T por espacio para que el constructor lo trate como local
     return new Date(str.replace('T', ' '));
   }
+  // ISO con Z → UTC, convertir a local normalmente
   return new Date(str);
 }
 
@@ -700,12 +707,23 @@ function renderSales(){
   ventasRecientes.slice(0,15).forEach(v=>{
     const ini  = (v.producto||'?')[0].toUpperCase();
     const d    = parseFechaLocal(v.fecha);
-    const hora = d ? d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '—';
+    // Mostrar fecha completa: dd/mm hora:min
+    const hoy  = new Date();
+    let fechaStr = '—';
+    if(d && !isNaN(d)){
+      const esHoy = d.toDateString() === hoy.toDateString();
+      if(esHoy){
+        fechaStr = 'Hoy ' + d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      } else {
+        fechaStr = d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'})
+                 + ' ' + d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      }
+    }
     h+=`<div class="sale-item">
       <div class="sale-av">${ini}</div>
       <div class="sale-body">
         <div class="sale-name">${esc(v.producto||'')}</div>
-        <div class="sale-time">${hora}${v.nota?' · '+esc(v.nota):''}</div>
+        <div class="sale-time">${fechaStr}${v.nota?' · '+esc(v.nota):''}</div>
       </div>
       <div class="sale-badge">×${v.cantidad||1}</div>
     </div>`;
