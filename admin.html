@@ -692,7 +692,7 @@ function renderTabla() {
     const qty  = +p.cantidad||0;
     const cost = +p.costo||0;
     const prec = +p.precio||0;
-    const mg   = cost && prec ? margenSobreVenta(cost,prec) : null;
+    const mg   = prec ? margenSobreVenta(cost,prec) : null;
     const mgPct = mg !== null ? Math.round(mg*100) : null;
     const mgHtml = mgPct !== null
       ? `<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`
