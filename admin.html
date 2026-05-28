@@ -372,6 +372,13 @@
       <!-- KPIs financieros -->
       <div class="kpi-grid" id="kpiGrid"></div>
 
+      <!-- Recomendaciones -->
+      <div class="chart-card" style="margin-bottom:20px">
+        <div class="chart-title">💡 Recomendaciones</div>
+        <div class="chart-sub">Sugerencias para mejorar rentabilidad</div>
+        <div class="rec-list" id="recList" style="margin-top:4px;margin-bottom:0"></div>
+      </div>
+
       <!-- Gráficas row 1 -->
       <div class="charts-grid">
         <div class="chart-card">
@@ -405,13 +412,6 @@
           <div class="chart-sub">% margen por producto</div>
           <canvas id="chartMargen" height="220"></canvas>
         </div>
-      </div>
-
-      <!-- Recomendaciones -->
-      <div class="chart-card" style="margin-bottom:0">
-        <div class="chart-title">💡 Recomendaciones</div>
-        <div class="chart-sub">Sugerencias para mejorar rentabilidad</div>
-        <div class="rec-list" id="recList" style="margin-top:4px;margin-bottom:0"></div>
       </div>
     </div>
 
@@ -834,8 +834,8 @@ async function dibujarEstadisticas() {
 async function generarRecomendaciones(ventaMap, ganMap, pm) {
   const cont = document.getElementById('recList');
 
-  // Mostrar spinner mientras Gemini analiza
-  cont.innerHTML = `<div class="ai-loading"><div class="ai-spin"></div>Gemini está analizando tu inventario y ventas…</div>`;
+  // Mostrar spinner mientras IA analiza
+  cont.innerHTML = `<div class="ai-loading"><div class="ai-spin"></div>IA está analizando tu inventario y ventas…</div>`;
 
   // Preparar resumen de datos para el prompt
   const resumenProductos = productos.map(p => {
@@ -897,7 +897,7 @@ Solo el bloque anterior, separado por "---", sin texto adicional antes ni despu�
     if(!items.length) throw new Error('sin items parseados');
 
     cont.innerHTML = `
-      <div class="ai-badge" style="margin-bottom:14px">✨ Análisis Gemini</div>
+      <div class="ai-badge" style="margin-bottom:14px">✨ Análisis IA</div>
       ${items.map(r => `
         <div class="rec-item">
           <div class="rec-icon" style="background:${bgs[r.key]}">${iconos[r.key]}</div>
@@ -909,12 +909,12 @@ Solo el bloque anterior, separado por "---", sin texto adicional antes ni despu�
         </div>`).join('')}`;
 
   } catch(e) {
-    console.warn('Gemini recomendaciones falló, usando lógica local:', e);
+    console.warn('IA recomendaciones falló, usando lógica local:', e);
     generarRecomendacionesLocal(ventaMap, ganMap, pm, cont);
   }
 }
 
-// Fallback local si Gemini no responde
+// Fallback local si IA no responde
 function generarRecomendacionesLocal(ventaMap, ganMap, pm, cont) {
   const recs = [];
   const totalVentas = Object.values(ventaMap).reduce((a,b)=>a+b,0) || 1;
@@ -1020,7 +1020,7 @@ function calcularSugerencias() {
     </div>`;
   }).join('');
 
-  nota.innerHTML = `<div class="ai-loading"><div class="ai-spin"></div>Gemini está analizando el precio ideal…</div>`;
+  nota.innerHTML = `<div class="ai-loading"><div class="ai-spin"></div>IA está analizando el precio ideal…</div>`;
   actualizarMargenModal();
 
   // Debounce — esperar 800ms antes de llamar la IA
@@ -1059,7 +1059,7 @@ Responde en texto plano sin markdown, sin asteriscos, sin listas con guiones.`;
   try {
     const respuesta = await gemini(prompt);
     nota.innerHTML = `
-      <div class="ai-badge">✨ Análisis Gemini</div>
+      <div class="ai-badge">✨ Análisis IA</div>
       <div class="ps-ai-nota">${esc(respuesta.trim())}</div>`;
   } catch(e) {
     const precMin = Math.round(precioConMargen(costo, MARGEN_MIN));
