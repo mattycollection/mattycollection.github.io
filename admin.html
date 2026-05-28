@@ -504,32 +504,75 @@ function setTab(t) {
 function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlayBg').classList.add('open'); }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('open'); }
 
-// ─── API ─────────────────────────────────────────────────
-async function api(params) {
-  const qs = new URLSearchParams(params);
-  const r = await fetch(URL_SCRIPT + '?' + qs);
-  const txt = await r.text();
-  try { return JSON.parse(txt); } catch { return {ok:false,error:txt}; }
+// ─── API via JSONP (evita CORS con Google Apps Script) ───
+let _jsonpCount = 0;
+
+function api(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_gasCallback' + (++_jsonpCount);
+    const qs = new URLSearchParams({ ...params, callback: cbName });
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('timeout'));
+    }, 15000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = function(data) {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = function() {
+      cleanup();
+      reject(new Error('script-error'));
+    };
+
+    script.src = URL_SCRIPT + '?' + qs;
+    document.head.appendChild(script);
+  });
 }
 
 async function loadAll(tabDestino) {
   const tab = tabDestino || ['productos','estadisticas','historial'].find(
     t => document.getElementById('panel-'+t).classList.contains('active')
   ) || 'productos';
+
+  // Mostrar spinner mientras carga
+  document.getElementById('tablaWrap').innerHTML =
+    '<div class="loading-state"><div class="spin"></div>Cargando productos…</div>';
+
   try {
     const [pr, vr, hr] = await Promise.all([
       api({action:'getProductos'}),
       api({action:'getVentas'}),
       api({action:'getHistorial'}),
     ]);
+
+    // Validar que las respuestas traigan datos reales
+    if (!pr || !pr.ok || !Array.isArray(pr.data)) {
+      console.warn('getProductos respondió sin datos válidos:', pr);
+      demoData();
+      return;
+    }
+
     productos = pr.data || [];
-    ventas    = vr.data || [];
-    historial = hr.data || [];
-  } catch {
+    ventas    = (vr && vr.ok && Array.isArray(vr.data)) ? vr.data : [];
+    historial = (hr && hr.ok && Array.isArray(hr.data)) ? hr.data : [];
+
+  } catch(e) {
+    console.warn('Error de red al cargar datos:', e);
     demoData();
     return;
   }
-  actualizarStats(); renderTabla();
+
+  actualizarStats();
+  renderTabla();
   if(tab === 'estadisticas') dibujarEstadisticas();
   if(tab === 'historial')    renderHistorial();
 }
@@ -577,8 +620,12 @@ function renderTabla() {
   const q = (document.getElementById('buscar').value||'').toLowerCase();
   const lista = productos.filter(p=>(p.nombre||'').toLowerCase().includes(q));
   const w = document.getElementById('tablaWrap');
+  if(!productos.length){
+    w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><p>No hay productos aún — agrega el primero</p></div>`;
+    return;
+  }
   if(!lista.length){
-    w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No se encontraron productos</p></div>`;
+    w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No se encontraron productos para "<strong>${esc(q)}</strong>"</p></div>`;
     return;
   }
   let h=`<table><thead><tr><th>#</th><th>Nombre</th><th>Stock</th><th>Costo</th><th>Precio</th><th>Margen</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
@@ -815,7 +862,7 @@ function renderHistorial() {
     let detalle=esc(i.detalle||'');
     let notaHtml='';
     const nm=(i.detalle||'').match(/—\s*"(.+)"$/);
-    if(nm){ detalle=esc((i.detalle||'').replace(/\s*—\s*".+"$/','')); notaHtml=`<span style="display:inline-block;margin-top:4px;background:rgba(201,168,76,.12);color:var(--oro-dim);border-radius:5px;padding:2px 8px;font-size:11px;font-style:italic;">📝 ${esc(nm[1])}</span>`; }
+    if(nm){ detalle=esc((i.detalle||'').replace(/\s*—\s*".+"$/,'')); notaHtml=`<span style="display:inline-block;margin-top:4px;background:rgba(201,168,76,.12);color:var(--oro-dim);border-radius:5px;padding:2px 8px;font-size:11px;font-style:italic;">📝 ${esc(nm[1])}</span>`; }
     h+=`<div class="hist-item"><div class="hist-icon" style="background:${bgmap[t]||bgmap.edit}">${icons[t]||'📝'}</div><div class="hist-body"><strong>${esc(i.accion||'')}</strong><small>${detalle} &nbsp;·&nbsp; ${formatFecha(i.fecha)}</small>${notaHtml}</div></div>`;
   });
   h+='</div>';
@@ -966,34 +1013,47 @@ async function guardarProducto(){
   const precio   = document.getElementById('fPrecio').value;
   if(!nombre){ toast('Ingresa el nombre del producto','warn'); return; }
   const row = document.getElementById('editRow').value;
+  let guardado = false;
   try {
-    await api({action:row?'editProducto':'addProducto', nombre, cantidad, costo, precio, row});
-    toast(row?'Producto actualizado ✓':'Producto creado ✓','ok');
-    closeModal(); loadAll();
-  } catch {
-    if(row){
-      const p=productos.find(x=>x.row===+row);
-      if(p){p.nombre=nombre;p.cantidad=+cantidad;p.costo=+costo;p.precio=+precio;}
-    } else {
-      productos.push({row:Date.now(),nombre,cantidad:+cantidad,costo:+costo,precio:+precio,fecha:new Date().toISOString().slice(0,10)});
+    const res = await api({action:row?'editProducto':'addProducto', nombre, cantidad, costo, precio, row});
+    if(res && res.ok) {
+      toast(row?'Producto actualizado ✓':'Producto creado ✓','ok');
+      guardado = true;
     }
-    const detalleLog = `${nombre}${costo?' · Costo: '+dop(costo):''}${precio?' · Precio: '+dop(precio):''}`;
-    historial.push({accion:row?'Producto editado':'Producto creado',detalle:detalleLog,fecha:new Date().toLocaleString(),tipo:row?'edit':'create'});
-    toast(row?'Actualizado (demo)':'Creado (demo)','ok');
-    closeModal(); actualizarStats(); renderTabla();
+  } catch(e) {
+    console.warn('Error al guardar producto:', e);
   }
+  if(guardado){
+    closeModal(); loadAll();
+    return;
+  }
+  // Fallback demo (sin conexión o script no disponible)
+  if(row){
+    const p=productos.find(x=>x.row===+row);
+    if(p){p.nombre=nombre;p.cantidad=+cantidad;p.costo=+costo;p.precio=+precio;}
+  } else {
+    productos.push({row:Date.now(),nombre,cantidad:+cantidad,costo:+costo,precio:+precio,fecha:new Date().toISOString().slice(0,10)});
+  }
+  const detalleLog = `${nombre}${costo?' · Costo: '+dop(+costo):''}${precio?' · Precio: '+dop(+precio):''}`;
+  historial.push({accion:row?'Producto editado':'Producto creado',detalle:detalleLog,fecha:new Date().toLocaleString(),tipo:row?'edit':'create'});
+  toast(row?'Actualizado (modo offline)':'Creado (modo offline)','warn');
+  closeModal(); actualizarStats(); renderTabla();
 }
 
 async function eliminarProducto(row){
   const p=productos.find(x=>x.row===row);
   if(!confirm(`¿Eliminar "${p?.nombre}"?`)) return;
+  let eliminado = false;
   try {
-    await api({action:'deleteProducto',row});
+    const res = await api({action:'deleteProducto',row});
+    if(res && res.ok) eliminado = true;
+  } catch(e) { console.warn('Error al eliminar:', e); }
+  if(eliminado){
     toast('Producto eliminado','warn'); loadAll();
-  } catch {
+  } else {
     productos=productos.filter(x=>x.row!==row);
     historial.push({accion:'Producto eliminado',detalle:p?.nombre||'',fecha:new Date().toLocaleString(),tipo:'delete'});
-    toast('Eliminado (demo)','warn'); actualizarStats(); renderTabla();
+    toast('Eliminado (modo offline)','warn'); actualizarStats(); renderTabla();
   }
 }
 
