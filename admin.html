@@ -60,6 +60,8 @@
   .btn-outline:hover { background:var(--verde); color:var(--crema); }
   .btn-danger-soft { background:rgba(192,57,43,.08); color:var(--rojo); border:1px solid rgba(192,57,43,.2); }
   .btn-danger-soft:hover { background:var(--rojo); color:#fff; }
+  .btn-edit-soft { background:rgba(52,152,219,.1); color:#2471A3; border:1px solid rgba(52,152,219,.2); }
+  .btn-edit-soft:hover { background:#2471A3; color:#fff; }
   .btn-sm { padding:7px 14px; font-size:11px; }
   .btn svg { width:13px; height:13px; }
 
@@ -231,8 +233,8 @@
   .detail-venta-row .dv-monto { font-weight:600; color:var(--oro-dim); font-size:12px; }
   .detail-venta-row .dv-nota { font-style:italic; color:var(--muted); font-size:11px; }
   .btn-icon { width:32px; height:32px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; border:none; transition:all .2s; flex-shrink:0; }
-  .btn-icon-info { background:rgba(52,152,219,.1); color:#2471A3; border:1px solid rgba(52,152,219,.2); }
-  .btn-icon-info:hover { background:#2471A3; color:#fff; }
+  .btn-icon-info { background:rgba(45,107,71,.1); color:var(--verde-pale); border:1px solid rgba(45,107,71,.25); }
+  .btn-icon-info:hover { background:var(--verde-pale); color:#fff; }
   .btn-icon svg { width:14px; height:14px; }
 </style>
 </head>
@@ -652,8 +654,8 @@ function renderTabla() {
       <td>${mgHtml}</td>
       <td>${pill}</td>
       <td><div class="row-actions">
-        <button class="btn-icon btn-icon-info" title="Ver detalle" onclick="verDetalle(${p.row})">Detalles</button>
-        <button class="btn btn-outline btn-sm" onclick="editarProducto(${p.row})">Editar</button>
+        <button class="btn btn-icon-info btn-sm"" title="Ver detalle" onclick="verDetalle(${p.row})">Detalles</button>
+        <button class="btn btn-edit-soft btn-sm" onclick="editarProducto(${p.row})">Editar</button>
         <button class="btn btn-danger-soft btn-sm" onclick="eliminarProducto(${p.row})">Eliminar</button>
       </div></td>
     </tr>`;
