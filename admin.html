@@ -372,13 +372,6 @@
       <!-- KPIs financieros -->
       <div class="kpi-grid" id="kpiGrid"></div>
 
-      <!-- Recomendaciones -->
-      <div class="chart-card" style="margin-bottom:20px;">
-        <div class="chart-title">💡 Recomendaciones</div>
-        <div class="chart-sub">Sugerencias para mejorar rentabilidad</div>
-        <div class="rec-list" id="recList" style="margin-top:4px;margin-bottom:0"></div>
-      </div>
-
       <!-- Gráficas row 1 -->
       <div class="charts-grid">
         <div class="chart-card">
@@ -412,6 +405,13 @@
           <div class="chart-sub">% margen por producto</div>
           <canvas id="chartMargen" height="220"></canvas>
         </div>
+      </div>
+
+      <!-- Recomendaciones -->
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-title">💡 Recomendaciones</div>
+        <div class="chart-sub">Sugerencias para mejorar rentabilidad</div>
+        <div class="rec-list" id="recList" style="margin-top:4px;margin-bottom:0"></div>
       </div>
     </div>
 
@@ -495,24 +495,23 @@
 
 <script>
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
-const GEMINI_KEY = "";
-const GEMINI_MODEL = "gemini-2.5-flash";
+// La API key de Gemini vive en Google Apps Script (Script Properties).
+// El HTML nunca la ve — solo llama al proxy con action=gemini&prompt=...
 
+// Para prompts largos usamos fetch POST directo al GAS
+// (GAS acepta POST con body JSON gracias al doPost que ya tenemos)
 async function gemini(prompt) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 1200 }
-      })
-    }
-  );
-  if (!res.ok) throw new Error('Gemini HTTP ' + res.status);
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const res = await fetch(URL_SCRIPT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'gemini', prompt }),
+    redirect: 'follow'
+  });
+  const txt = await res.text();
+  let data;
+  try { data = JSON.parse(txt); } catch { throw new Error('respuesta no JSON'); }
+  if (!data || !data.ok) throw new Error(data?.error || 'error gemini proxy');
+  return data.texto;
 }
 
 // ─── IMPUESTOS RD ─────────────────────────────────────────
@@ -692,7 +691,7 @@ function renderTabla() {
     const qty  = +p.cantidad||0;
     const cost = +p.costo||0;
     const prec = +p.precio||0;
-    const mg   = prec ? margenSobreVenta(cost,prec) : null;
+    const mg   = cost && prec ? margenSobreVenta(cost,prec) : null;
     const mgPct = mg !== null ? Math.round(mg*100) : null;
     const mgHtml = mgPct !== null
       ? `<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`
@@ -898,7 +897,7 @@ Solo el bloque anterior, separado por "---", sin texto adicional antes ni despu�
     if(!items.length) throw new Error('sin items parseados');
 
     cont.innerHTML = `
-      <div class="ai-badge" style="margin-bottom:14px">✨ Análisis IA</div>
+      <div class="ai-badge" style="margin-bottom:14px">✨ Análisis Gemini</div>
       ${items.map(r => `
         <div class="rec-item">
           <div class="rec-icon" style="background:${bgs[r.key]}">${iconos[r.key]}</div>
@@ -910,12 +909,12 @@ Solo el bloque anterior, separado por "---", sin texto adicional antes ni despu�
         </div>`).join('')}`;
 
   } catch(e) {
-    console.warn('IA recomendaciones falló, usando lógica local:', e);
+    console.warn('Gemini recomendaciones falló, usando lógica local:', e);
     generarRecomendacionesLocal(ventaMap, ganMap, pm, cont);
   }
 }
 
-// Fallback local si IA no responde
+// Fallback local si Gemini no responde
 function generarRecomendacionesLocal(ventaMap, ganMap, pm, cont) {
   const recs = [];
   const totalVentas = Object.values(ventaMap).reduce((a,b)=>a+b,0) || 1;
@@ -1060,7 +1059,7 @@ Responde en texto plano sin markdown, sin asteriscos, sin listas con guiones.`;
   try {
     const respuesta = await gemini(prompt);
     nota.innerHTML = `
-      <div class="ai-badge">✨ Análisis IA</div>
+      <div class="ai-badge">✨ Análisis Gemini</div>
       <div class="ps-ai-nota">${esc(respuesta.trim())}</div>`;
   } catch(e) {
     const precMin = Math.round(precioConMargen(costo, MARGEN_MIN));
