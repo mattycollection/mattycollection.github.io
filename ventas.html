@@ -399,7 +399,7 @@
 
     <div class="form-group">
       <label>Producto</label>
-      <select class="inp" id="selProd" onchange="onProdChange()" onfocus="refrescarProductos()">
+      <select class="inp" id="selProd" onchange="onProdChange()">
         <option value="">Cargando productos…</option>
       </select>
     </div>
@@ -550,19 +550,13 @@ async function cargarDatos(){
   }
 }
 
-// Refresca solo los productos al abrir el selector, preservando la selección actual
-let refrescando = false;
-async function refrescarProductos(){
-  if(refrescando) return;
-  refrescando = true;
-  const sel = document.getElementById('selProd');
-  const valorActual = sel.value;
+// Recarga productos del servidor y actualiza el combobox conservando la selección
+async function refrescarCombobox(rowSeleccionado) {
   try {
     const pr = await api({action:'getProductos'});
     if(pr.ok && pr.data){
       productos = pr.data;
-      hayConexion = true;
-      setEstadoConexion(true);
+      const sel = document.getElementById('selProd');
       sel.innerHTML = '<option value="">— Selecciona un artículo —</option>';
       productos.forEach(p=>{
         const o = document.createElement('option');
@@ -574,14 +568,12 @@ async function refrescarProductos(){
         o.dataset.precio = p.precio || 0;
         sel.appendChild(o);
       });
-      if(valorActual) sel.value = valorActual;
+      if(rowSeleccionado) sel.value = rowSeleccionado;
       onProdChange();
     }
-  } catch {
-    hayConexion = false;
-    setEstadoConexion(false);
+  } catch(e) {
+    console.warn('Error al refrescar combobox:', e);
   }
-  refrescando = false;
 }
 
 function demoDatos(){
@@ -658,59 +650,93 @@ async function registrarVenta(){
     toast('Sin conexión — no se puede registrar la venta','err');
     return;
   }
-  const sel = document.getElementById('selProd');
-  const opt = sel.selectedOptions[0];
+  const sel      = document.getElementById('selProd');
+  const opt      = sel.selectedOptions[0];
   if(!opt||!opt.value){ toast('Selecciona un artículo','warn'); return; }
+
   const cantidad = +document.getElementById('cantidad').value||1;
   const nota     = document.getElementById('nota').value.trim();
   const nombre   = opt.dataset.nombre;
-  const stock    = +opt.dataset.stock;
-  if(cantidad > stock){ toast(`Solo hay ${stock} unidades disponibles`,'err'); return; }
+  const rowProd  = opt.value;
 
   const btn = document.getElementById('btnReg');
   btn.disabled = true;
-  btn.innerHTML = 'Guardando…';
+  btn.innerHTML = 'Verificando stock…';
 
+  // ── 1. Consultar stock actualizado del servidor ──────────
+  let stockReal = 0;
   try {
-    const res = await api({action:'addVenta', nombre, cantidad, nota, row: opt.value});
+    const pr = await api({action:'getProductos'});
+    if(pr.ok && pr.data){
+      const prodActual = pr.data.find(p => String(p.row) === String(rowProd));
+      stockReal = +(prodActual?.cantidad || 0);
+    } else {
+      throw new Error('sin datos');
+    }
+  } catch {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Registrar <span class="oro-text">· Venta</span>`;
+    toast('No se pudo verificar el stock — revisa la conexión','err');
+    return;
+  }
+
+  // ── 2. Validar stock real ────────────────────────────────
+  if(stockReal <= 0){
+    toast(`"${nombre}" ya no tiene unidades disponibles`,'err');
+    await refrescarCombobox(null); // limpiar selección, stock es 0
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Registrar <span class="oro-text">· Venta</span>`;
+    return;
+  }
+  if(cantidad > stockReal){
+    toast(`Solo quedan ${stockReal} unidades de "${nombre}" disponibles`,'err');
+    await refrescarCombobox(rowProd); // actualizar combobox con stock real
+    document.getElementById('cantidad').max = stockReal;
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Registrar <span class="oro-text">· Venta</span>`;
+    return;
+  }
+
+  // ── 3. Registrar la venta ────────────────────────────────
+  btn.innerHTML = 'Guardando…';
+  try {
+    const res = await api({action:'addVenta', nombre, cantidad, nota, row: rowProd});
     if(!res.ok) throw new Error('respuesta no ok');
   } catch {
     hayConexion = false;
     setEstadoConexion(false);
     btn.disabled = false;
-    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      Registrar <span class="oro-text">· Venta</span>`;
+    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Registrar <span class="oro-text">· Venta</span>`;
     toast('Error al guardar — verifica tu conexión','err');
     return;
   }
 
-  // Actualizar local solo si el servidor confirmó
-  const p = productos.find(x=>x.row===+opt.value);
-  if(p) p.cantidad = Math.max(0, p.cantidad-cantidad);
-  // Guardar fecha como ISO local (sin Z) para que parseFechaLocal la trate correctamente
+  // ── 4. Actualizar estado local y refrescar combobox ──────
   const ahora = new Date();
   const fechaLocal = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}T${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}:${String(ahora.getSeconds()).padStart(2,'0')}`;
   ventasRecientes.unshift({producto:nombre, cantidad, fecha:fechaLocal, nota});
   ventasHoy++; unidadesHoy += cantidad;
 
-  onExito(nombre, cantidad);
-
   btn.disabled = false;
-  btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    Registrar <span class="oro-text">· Venta</span>`;
+  btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Registrar <span class="oro-text">· Venta</span>`;
+
+  onExito(nombre, cantidad); // muestra la animación y luego llama actualizarUI
 }
 
 function onExito(nombre, cantidad){
   document.getElementById('successMsg').textContent = `${cantidad}× ${nombre}`;
   const ov = document.getElementById('successOverlay');
   ov.classList.add('show');
-  setTimeout(()=>{
+  setTimeout(async ()=>{
     ov.classList.remove('show');
     document.getElementById('selProd').value='';
     document.getElementById('cantidad').value=1;
     document.getElementById('nota').value='';
     document.getElementById('preview').classList.remove('show');
-    actualizarUI();
+    // Refrescar combobox con datos reales del servidor tras la venta
+    await refrescarCombobox(null);
+    renderSales();
+    actualizarContadores();
   }, 1800);
 }
 
