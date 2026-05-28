@@ -236,6 +236,44 @@
   .btn-icon-info { background:rgba(45,107,71,.1); color:var(--verde-pale); border:1px solid rgba(45,107,71,.25); }
   .btn-icon-info:hover { background:var(--verde-pale); color:#fff; }
   .btn-icon svg { width:14px; height:14px; }
+  /* IA — estados y respuesta */
+  .ai-loading {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px;
+    background: rgba(201,168,76,.07);
+    border: 1px solid rgba(201,168,76,.2);
+    border-radius: 9px; margin-bottom: 14px;
+    font-size: 13px; color: var(--oro-dim); font-weight: 500;
+  }
+  .ai-loading .ai-spin {
+    width: 16px; height: 16px; border: 2px solid rgba(201,168,76,.3);
+    border-top-color: var(--oro); border-radius: 50%;
+    animation: spin .7s linear infinite; flex-shrink: 0;
+  }
+  .ai-rec-card {
+    background: rgba(26,61,43,.04);
+    border: 1px solid rgba(26,61,43,.1);
+    border-left: 3px solid var(--oro);
+    border-radius: 10px; padding: 16px 18px;
+    font-size: 13px; color: var(--texto); line-height: 1.65;
+    white-space: pre-wrap;
+  }
+  .ai-rec-card strong { color: var(--verde); }
+  .ai-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(201,168,76,.12); color: var(--oro-dim);
+    border: 1px solid rgba(201,168,76,.25);
+    border-radius: 5px; padding: 2px 9px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .ps-ai-nota {
+    background: rgba(26,61,43,.04); border: 1px solid rgba(26,61,43,.08);
+    border-radius: 8px; padding: 12px 14px; margin-top: 10px;
+    font-size: 12px; color: var(--texto); line-height: 1.6;
+    white-space: pre-wrap;
+  }
 </style>
 </head>
 <body>
@@ -457,6 +495,25 @@
 
 <script>
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
+const GEMINI_KEY = "AIzaSyC9lzTHcnxkRlBIakZAxaG4qxTtU0qIQto";
+const GEMINI_MODEL = "gemini-2.5-flash";
+
+async function gemini(prompt) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.4, maxOutputTokens: 1200 }
+      })
+    }
+  );
+  if (!res.ok) throw new Error('Gemini HTTP ' + res.status);
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
 
 // ─── IMPUESTOS RD ─────────────────────────────────────────
 // ITBIS = 18% (IVA dominicano sobre bienes/servicios)
@@ -654,7 +711,9 @@ function renderTabla() {
       <td>${mgHtml}</td>
       <td>${pill}</td>
       <td><div class="row-actions">
-        <button class="btn btn-icon-info btn-sm"" title="Ver detalle" onclick="verDetalle(${p.row})">Detalles</button>
+        <button class="btn-icon btn-icon-info" title="Ver detalle" onclick="verDetalle(${p.row})">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </button>
         <button class="btn btn-edit-soft btn-sm" onclick="editarProducto(${p.row})">Editar</button>
         <button class="btn btn-danger-soft btn-sm" onclick="eliminarProducto(${p.row})">Eliminar</button>
       </div></td>
@@ -695,7 +754,7 @@ function calcKPIs() {
   return {ingresoTotal,costoTotal,gananciaTotal,rentabilidad,valorInventario,ventaMap,ingMap,ganMap,pm};
 }
 
-function dibujarEstadisticas() {
+async function dibujarEstadisticas() {
   const {ingresoTotal,costoTotal,gananciaTotal,rentabilidad,valorInventario,ventaMap,ingMap,ganMap,pm} = calcKPIs();
 
   // KPIs
@@ -769,62 +828,129 @@ function dibujarEstadisticas() {
     options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'%'}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'},callback:v=>v+'%'},max:100}},responsive:true}
   });
 
-  // Recomendaciones
+  // Recomendaciones con IA
   generarRecomendaciones(ventaMap, ganMap, pm);
 }
 
-function generarRecomendaciones(ventaMap, ganMap, pm) {
+async function generarRecomendaciones(ventaMap, ganMap, pm) {
+  const cont = document.getElementById('recList');
+
+  // Mostrar spinner mientras Gemini analiza
+  cont.innerHTML = `<div class="ai-loading"><div class="ai-spin"></div>Gemini está analizando tu inventario y ventas…</div>`;
+
+  // Preparar resumen de datos para el prompt
+  const resumenProductos = productos.map(p => {
+    const vendidos = ventaMap[p.nombre] || 0;
+    const ganancia = ganMap[p.nombre]   || 0;
+    const mg = +p.costo && +p.precio
+      ? Math.round(margenSobreVenta(+p.costo, +p.precio) * 100)
+      : null;
+    return `- ${p.nombre}: stock ${p.cantidad}, costo RD$${p.costo||0}, precio RD$${p.precio||0}, margen ${mg !== null ? mg+'%' : 'sin configurar'}, vendidos ${vendidos} und, ganancia RD$${Math.round(ganancia)}`;
+  }).join('\n');
+
+  const totalVentas   = Object.values(ventaMap).reduce((a,b)=>a+b,0);
+  const totalIngreso  = productos.reduce((s,p) => s + (+p.precio||0)*(ventaMap[p.nombre]||0), 0);
+  const totalGanancia = Object.values(ganMap).reduce((a,b)=>a+b,0);
+
+  const prompt = `Eres un asesor experto en negocios de moda retail en República Dominicana.
+
+Analiza el siguiente inventario y ventas de "Matty Collection" y genera recomendaciones accionables en español.
+
+RESUMEN GENERAL:
+- Total ventas: ${totalVentas} unidades
+- Ingresos totales: RD$${Math.round(totalIngreso).toLocaleString('es-DO')}
+- Ganancia total: RD$${Math.round(totalGanancia).toLocaleString('es-DO')}
+- Rentabilidad: ${totalIngreso ? Math.round((totalGanancia/totalIngreso)*100) : 0}%
+
+PRODUCTOS:
+${resumenProductos}
+
+CONTEXTO: ITBIS RD es 18%. Margen saludable mínimo 30% sobre precio de venta.
+
+Genera de 4 a 7 recomendaciones concretas y específicas. Cada recomendación debe tener este formato exacto (sin markdown, sin asteriscos):
+
+TITULO: [título corto máx 8 palabras]
+TIPO: [precio | stock | alerta | oportunidad]
+DETALLE: [explicación específica de 1-2 oraciones con números concretos]
+---
+
+Solo el bloque anterior, separado por "---", sin texto adicional antes ni después.`;
+
+  try {
+    const texto = await gemini(prompt);
+    const bloques = texto.trim().split('---').map(b => b.trim()).filter(Boolean);
+
+    if(!bloques.length) throw new Error('sin bloques');
+
+    const iconos = { precio:'💡', stock:'📦', alerta:'⚠️', oportunidad:'🚀' };
+    const bgs    = { precio:'rgba(201,168,76,.1)', stock:'rgba(45,107,71,.1)', alerta:'rgba(192,57,43,.1)', oportunidad:'rgba(52,152,219,.1)' };
+    const tags   = { precio:'tag-precio', stock:'tag-stock', alerta:'tag-alerta', oportunidad:'tag-precio' };
+    const tagTxts = { precio:'Revisar precio', stock:'Gestionar stock', alerta:'Atención requerida', oportunidad:'Aprovechar' };
+
+    const items = bloques.map(bloque => {
+      const titulo  = (bloque.match(/TITULO:\s*(.+)/)?.[1] || '').trim();
+      const tipo    = (bloque.match(/TIPO:\s*(.+)/)?.[1] || 'precio').trim().toLowerCase();
+      const detalle = (bloque.match(/DETALLE:\s*([\s\S]+)/)?.[1] || '').trim();
+      const key     = Object.keys(iconos).find(k => tipo.includes(k)) || 'precio';
+      return { titulo, detalle, key };
+    }).filter(i => i.titulo);
+
+    if(!items.length) throw new Error('sin items parseados');
+
+    cont.innerHTML = `
+      <div class="ai-badge" style="margin-bottom:14px">✨ Análisis Gemini</div>
+      ${items.map(r => `
+        <div class="rec-item">
+          <div class="rec-icon" style="background:${bgs[r.key]}">${iconos[r.key]}</div>
+          <div class="rec-body">
+            <strong>${esc(r.titulo)}</strong>
+            <p>${esc(r.detalle)}</p>
+            <span class="rec-tag ${tags[r.key]}">${tagTxts[r.key]}</span>
+          </div>
+        </div>`).join('')}`;
+
+  } catch(e) {
+    console.warn('Gemini recomendaciones falló, usando lógica local:', e);
+    generarRecomendacionesLocal(ventaMap, ganMap, pm, cont);
+  }
+}
+
+// Fallback local si Gemini no responde
+function generarRecomendacionesLocal(ventaMap, ganMap, pm, cont) {
   const recs = [];
   const totalVentas = Object.values(ventaMap).reduce((a,b)=>a+b,0) || 1;
   const promedioVentas = totalVentas / (Object.keys(ventaMap).length || 1);
 
   productos.forEach(p => {
-    const nombre = p.nombre;
-    const costo  = +p.costo||0;
-    const precio = +p.precio||0;
-    const qty    = +p.cantidad||0;
+    const nombre   = p.nombre;
+    const costo    = +p.costo||0;
+    const precio   = +p.precio||0;
+    const qty      = +p.cantidad||0;
     const vendidos = ventaMap[nombre]||0;
-    const ganancia = ganMap[nombre]||0;
-    const mg = precio && costo ? margenSobreVenta(costo,precio) : null;
+    const mg       = precio && costo ? margenSobreVenta(costo,precio) : null;
 
-    // 1. Precio sin configurar
     if(!precio || !costo) {
-      recs.push({icon:'⚙️',bg:'rgba(201,168,76,.1)',titulo:`${nombre} — sin precio/costo`,desc:`Este producto no tiene costo o precio configurado. Sin esta información no se puede calcular la rentabilidad.`,tag:'tag-precio',tagTxt:'Configurar precio'});
+      recs.push({icon:'⚙️',bg:'rgba(201,168,76,.1)',titulo:`${nombre} — sin precio/costo`,desc:`Sin esta información no se puede calcular rentabilidad.`,tag:'tag-precio',tagTxt:'Configurar precio'});
       return;
     }
-
-    // 2. Margen muy bajo
     if(mg < 0.25) {
       const precSug = Math.round(precioConMargen(costo, MARGEN_MIN));
-      recs.push({icon:'📉',bg:'rgba(192,57,43,.1)',titulo:`${nombre} — margen crítico (${Math.round(mg*100)}%)`,desc:`El precio actual (${dop(precio)}) apenas cubre el costo. Con los costos operativos y el ITBIS (18%), puedes estar vendiendo a pérdida. Precio mínimo sugerido: ${dop(precSug)}.`,tag:'tag-alerta',tagTxt:'Aumentar precio'});
+      recs.push({icon:'📉',bg:'rgba(192,57,43,.1)',titulo:`${nombre} — margen crítico (${Math.round(mg*100)}%)`,desc:`Precio mínimo sugerido: ${dop(precSug)}.`,tag:'tag-alerta',tagTxt:'Aumentar precio'});
     }
-
-    // 3. Se vende mucho pero ganancia baja
     if(vendidos > promedioVentas && mg !== null && mg < 0.40) {
       const precSug = Math.round(precioConMargen(costo, MARGEN_MED));
-      recs.push({icon:'🔥',bg:'rgba(230,126,34,.1)',titulo:`${nombre} — alta demanda, bajo margen`,desc:`Es uno de tus productos más vendidos (${vendidos} und) pero el margen es solo ${Math.round(mg*100)}%. Subir el precio a ${dop(precSug)} (+${Math.round((MARGEN_MED-mg)*100)} pp de margen) generaría ${dop((precSug-precio)*vendidos)} adicionales en próximas ventas.`,tag:'tag-precio',tagTxt:'Optimizar precio'});
+      recs.push({icon:'🔥',bg:'rgba(230,126,34,.1)',titulo:`${nombre} — alta demanda, bajo margen`,desc:`${vendidos} und vendidas. Precio sugerido: ${dop(precSug)}.`,tag:'tag-precio',tagTxt:'Optimizar precio'});
     }
-
-    // 4. Se vende poco — revisar precio o visibilidad
-    if(vendidos > 0 && vendidos < promedioVentas * 0.4) {
-      const precSug = Math.round(precio * 0.85);
-      recs.push({icon:'🐢',bg:'rgba(122,155,135,.1)',titulo:`${nombre} — baja rotación`,desc:`Solo ${vendidos} und vendidas. Podría beneficiarse de una reducción temporal de precio (−15% = ${dop(precSug)}) o una promoción para mejorar rotación.`,tag:'tag-precio',tagTxt:'Revisar precio'});
-    }
-
-    // 5. Stock agotado o crítico con buenas ventas
     if(qty < 5 && vendidos > 0) {
-      recs.push({icon:'⚠️',bg:'rgba(192,57,43,.1)',titulo:`${nombre} — stock crítico`,desc:`Solo quedan ${qty} unidades y el producto tiene buenas ventas (${vendidos} und). Reabastecer pronto para no perder ingresos.`,tag:'tag-stock',tagTxt:'Reabastecer'});
+      recs.push({icon:'⚠️',bg:'rgba(192,57,43,.1)',titulo:`${nombre} — stock crítico`,desc:`Solo ${qty} unidades. Reabastecer pronto.`,tag:'tag-stock',tagTxt:'Reabastecer'});
     }
-
-    // 6. Alto stock sin ventas registradas
     if(qty > 20 && vendidos === 0) {
-      recs.push({icon:'📦',bg:'rgba(201,168,76,.1)',titulo:`${nombre} — stock sin movimiento`,desc:`${qty} unidades sin ventas registradas. Considera una promoción de lanzamiento o verificar que esté activo en el punto de venta.`,tag:'tag-stock',tagTxt:'Promover'});
+      recs.push({icon:'📦',bg:'rgba(201,168,76,.1)',titulo:`${nombre} — sin ventas`,desc:`${qty} unidades sin movimiento.`,tag:'tag-stock',tagTxt:'Promover'});
     }
   });
 
-  const cont = document.getElementById('recList');
   if(!recs.length) {
-    cont.innerHTML=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">✅ Todo luce bien — no hay alertas en este momento</div>`;
+    cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">✅ Todo luce bien</div>`;
     return;
   }
   cont.innerHTML = recs.map(r=>`
@@ -869,15 +995,18 @@ function renderHistorial() {
   w.innerHTML=h;
 }
 
-// ─── MODAL: SUGERENCIAS DE PRECIO ────────────────────────
+// ─── MODAL: SUGERENCIAS DE PRECIO CON IA ─────────────────
+let _sugerenciasTimer = null;
+
 function calcularSugerencias() {
   const costo = +document.getElementById('fCosto').value||0;
   const box = document.getElementById('precioSugerido');
-  const grid = document.getElementById('psGrid');
-  const nota = document.getElementById('psNota');
   if(!costo){ box.classList.remove('show'); return; }
   box.classList.add('show');
 
+  // Mostrar precios base inmediatamente mientras carga la IA
+  const grid = document.getElementById('psGrid');
+  const nota = document.getElementById('psNota');
   const opciones = [
     { label:'Mínimo', pct:MARGEN_MIN, desc:'30%' },
     { label:'Óptimo', pct:MARGEN_MED, desc:'50%' },
@@ -892,9 +1021,51 @@ function calcularSugerencias() {
     </div>`;
   }).join('');
 
-  const precMin = Math.round(precioConMargen(costo, MARGEN_MIN));
-  nota.innerHTML = `ℹ️ En RD el ITBIS es 18%. Si el precio supera RD$250,000 aplica ISC. Estos precios incluyen un margen que cubre costos operativos. El precio mínimo recomendado es <strong>${dop(precMin)}</strong> (30% margen sobre venta).`;
+  nota.innerHTML = `<div class="ai-loading"><div class="ai-spin"></div>Gemini está analizando el precio ideal…</div>`;
   actualizarMargenModal();
+
+  // Debounce — esperar 800ms antes de llamar la IA
+  clearTimeout(_sugerenciasTimer);
+  _sugerenciasTimer = setTimeout(() => pedirSugerenciaIA(costo), 800);
+}
+
+async function pedirSugerenciaIA(costo) {
+  const nombre  = document.getElementById('fNombre').value.trim() || 'producto de moda/ropa';
+  const nota    = document.getElementById('psNota');
+  const ventasProducto = ventas.filter(v => v.producto === nombre).length;
+  const stockActual    = +document.getElementById('fCantidad').value || 0;
+
+  // Contexto de ventas similares para enriquecer el análisis
+  const contextoVentas = productos.length
+    ? `Otros productos en el inventario: ${productos.slice(0,5).map(p=>`${p.nombre} (costo RD$${p.costo||0}, precio RD$${p.precio||0})`).join(', ')}.`
+    : '';
+
+  const prompt = `Eres un asesor de negocios experto en retail de moda en República Dominicana.
+
+Producto: "${nombre}"
+Costo unitario: RD$${costo}
+Stock inicial: ${stockActual} unidades
+Ventas registradas de este producto: ${ventasProducto}
+${contextoVentas}
+
+Contexto fiscal RD: ITBIS 18% aplica sobre bienes y servicios. Ropa y calzado por debajo de RD$6,000 puede estar exenta, pero el comerciante paga ITBIS en sus insumos.
+
+Analiza y responde en español, de forma concisa (máximo 5 líneas), con:
+1. El precio de venta ideal para este producto en RD considerando el mercado local, el tipo de producto y los márgenes saludables.
+2. Una razón breve del por qué ese precio.
+3. Una advertencia si el costo es muy alto o el margen sería insuficiente.
+
+Responde en texto plano sin markdown, sin asteriscos, sin listas con guiones.`;
+
+  try {
+    const respuesta = await gemini(prompt);
+    nota.innerHTML = `
+      <div class="ai-badge">✨ Análisis Gemini</div>
+      <div class="ps-ai-nota">${esc(respuesta.trim())}</div>`;
+  } catch(e) {
+    const precMin = Math.round(precioConMargen(costo, MARGEN_MIN));
+    nota.innerHTML = `ℹ️ En RD el ITBIS es 18%. Precio mínimo recomendado: <strong>${dop(precMin)}</strong> (30% margen sobre venta).`;
+  }
 }
 
 function elegirPrecio(val) {
