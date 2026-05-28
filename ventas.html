@@ -170,7 +170,7 @@
     font-family: 'Jost', sans-serif;
     font-size: 22px; font-weight: 700; color: var(--verde);
     outline: none; transition: border-color .2s;
-    width: 100px; 
+    width: 100px;
   }
   .qty-num:focus { border-color: var(--oro-dim); }
 
@@ -567,12 +567,13 @@ async function refrescarProductos(){
       productos.forEach(p=>{
         const o = document.createElement('option');
         o.value = p.row;
-        o.textContent = `${p.nombre}  ·  ${p.cantidad} en stock`;
+        const precioTxt = +p.precio ? `  RD$${(+p.precio).toLocaleString('es-DO')}` : '';
+        o.textContent = `${p.nombre}  ·  ${p.cantidad} en stock${precioTxt}`;
         o.dataset.nombre = p.nombre;
         o.dataset.stock  = p.cantidad;
+        o.dataset.precio = p.precio || 0;
         sel.appendChild(o);
       });
-      // Restaurar selección previa si sigue existiendo
       if(valorActual) sel.value = valorActual;
       onProdChange();
     }
