@@ -546,7 +546,6 @@ async function cargarDatos(){
   } catch {
     hayConexion = false;
     setEstadoConexion(false);
-    demoDatos();
   }
 }
 
@@ -576,24 +575,6 @@ async function refrescarCombobox(rowSeleccionado) {
   }
 }
 
-function demoDatos(){
-  productos = [
-    {row:2,nombre:'Vestido Floral S',cantidad:34,precio:1800},
-    {row:3,nombre:'Blusa Lino Beige M',cantidad:22,precio:980},
-    {row:4,nombre:'Pantalón Palazzo L',cantidad:8,precio:1100},
-    {row:5,nombre:'Cartera Tejida',cantidad:45,precio:750},
-    {row:6,nombre:'Sandalias Doradas 38',cantidad:3,precio:1650},
-    {row:7,nombre:'Set Aretes Perla',cantidad:60,precio:350},
-  ];
-  ventasRecientes = [
-    {producto:'Set Aretes Perla',cantidad:3,fecha:new Date().toISOString(),nota:''},
-    {producto:'Cartera Tejida',cantidad:2,fecha:new Date().toISOString(),nota:'cliente frecuente'},
-  ];
-  ventasHoy = ventasRecientes.length;
-  unidadesHoy = 5;
-  actualizarUI();
-  toast('Modo demo — conecta tu Google Script','warn');
-}
 
 function actualizarUI(){
   const sel = document.getElementById('selProd');
