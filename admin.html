@@ -615,7 +615,6 @@ async function loadAll(tabDestino) {
     // Validar que las respuestas traigan datos reales
     if (!pr || !pr.ok || !Array.isArray(pr.data)) {
       console.warn('getProductos respondió sin datos válidos:', pr);
-      demoData();
       return;
     }
 
@@ -625,7 +624,6 @@ async function loadAll(tabDestino) {
 
   } catch(e) {
     console.warn('Error de red al cargar datos:', e);
-    demoData();
     return;
   }
 
@@ -633,34 +631,6 @@ async function loadAll(tabDestino) {
   renderTabla();
   if(tab === 'estadisticas') dibujarEstadisticas();
   if(tab === 'historial')    renderHistorial();
-}
-
-function demoData() {
-  productos = [
-    {row:2,nombre:'Vestido Floral S',cantidad:34,costo:850,precio:1800,fecha:'2025-01-10'},
-    {row:3,nombre:'Blusa Lino Beige M',cantidad:22,costo:420,precio:980,fecha:'2025-01-12'},
-    {row:4,nombre:'Pantalón Palazzo L',cantidad:8,costo:650,precio:1100,fecha:'2025-01-15'},
-    {row:5,nombre:'Cartera Tejida',cantidad:45,costo:380,precio:750,fecha:'2025-01-18'},
-    {row:6,nombre:'Sandalias Doradas 38',cantidad:3,costo:900,precio:1650,fecha:'2025-01-20'},
-    {row:7,nombre:'Set Aretes Perla',cantidad:60,costo:120,precio:350,fecha:'2025-01-22'},
-  ];
-  ventas = [
-    {producto:'Vestido Floral S',cantidad:14,fecha:'2025-02-01'},
-    {producto:'Blusa Lino Beige M',cantidad:9,fecha:'2025-02-03'},
-    {producto:'Cartera Tejida',cantidad:20,fecha:'2025-02-06'},
-    {producto:'Set Aretes Perla',cantidad:15,fecha:'2025-02-08'},
-    {producto:'Sandalias Doradas 38',cantidad:2,fecha:'2025-02-10'},
-    {producto:'Vestido Floral S',cantidad:6,fecha:'2025-02-12'},
-    {producto:'Pantalón Palazzo L',cantidad:3,fecha:'2025-02-14'},
-    {producto:'Cartera Tejida',cantidad:8,fecha:'2025-02-15'},
-  ];
-  historial = [
-    {accion:'Producto creado',detalle:'Vestido Floral S',fecha:'2025-01-10 09:32',tipo:'create'},
-    {accion:'Venta registrada',detalle:'14× Vestido Floral S',fecha:'2025-02-01 11:20',tipo:'sale'},
-    {accion:'Venta registrada',detalle:'20× Cartera Tejida — "cliente frecuente"',fecha:'2025-02-06 16:45',tipo:'sale'},
-  ];
-  actualizarStats(); renderTabla();
-  toast('Modo demo — conecta tu Google Script para datos reales','warn');
 }
 
 // ─── STATS RÁPIDAS ───────────────────────────────────────
