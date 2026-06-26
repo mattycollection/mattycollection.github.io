@@ -494,43 +494,32 @@
 <script>
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
 
-// ─── CONFIGURACIÓN GITHUB (para guardar fotos en media/) ──
-// Rellena estos valores con los datos de tu repositorio.
-// Token: GitHub → Settings → Developer settings → Personal access tokens
-// Scope mínimo requerido: repo (o public_repo si el repo es público)
-const GH_OWNER  = "mattycollection";       // tu usuario/organización de GitHub
-const GH_REPO   = "mattycollection.github.io"; // nombre del repositorio
-const GH_BRANCH = "main";                  // rama principal
-const GH_TOKEN  = "";                      // ← pegar token aquí (nunca subir a GitHub)
-const FOTO_DEFAULT = "media/producto_sin_foto.png";
+// ─── FOTOS EN DRIVE ───────────────────────────────────────
+// Las fotos se suben a Google Drive via el Apps Script (POST).
+// La foto por defecto vive en la misma carpeta de Drive.
+let FOTO_DEFAULT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23EDE5D4' rx='8'/%3E%3Crect x='60' y='55' width='80' height='65' rx='6' fill='%23C9A84C' opacity='.25'/%3E%3Ccircle cx='82' cy='75' r='8' fill='%23C9A84C' opacity='.4'/%3E%3Cpolygon points='60,120 90,88 108,108 125,92 140,120' fill='%23C9A84C' opacity='.35'/%3E%3Ctext x='100' y='148' font-family='sans-serif' font-size='11' fill='%237A9B87' text-anchor='middle'%3ESin foto%3C/text%3E%3C/svg%3E";
 
-// Sube un archivo a GitHub en la carpeta media/ usando la API REST
-async function subirFotoGitHub(base64, mimeType, nombreOriginal) {
-  if(!GH_TOKEN) throw new Error('GH_TOKEN no configurado');
-  // Generar nombre único: timestamp + extensión original
-  const ext = nombreOriginal.split('.').pop().toLowerCase() || 'jpg';
-  const fileName = `producto_${Date.now()}.${ext}`;
-  const path = `media/${fileName}`;
-  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`;
+// Carga la URL real de producto_sin_foto.png desde Drive al arrancar
+async function cargarFotoDefault() {
+  try {
+    const r = await api({ action: 'getFotoDefault' });
+    if (r && r.ok && r.url) FOTO_DEFAULT = r.url;
+  } catch(e) { /* mantener el SVG inline como fallback */ }
+}
 
-  const res = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `token ${GH_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      message: `Foto producto: ${fileName}`,
-      content: base64,   // ya viene en base64 puro desde FileReader
-      branch: GH_BRANCH,
-    })
+// Sube una foto a Google Drive via POST al Apps Script
+async function subirFotoDrive(base64, mimeType, fileName) {
+  const res = await fetch(URL_SCRIPT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'uploadFoto', base64, mimeType, fileName }),
+    redirect: 'follow'
   });
-  if(!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err.message || `GitHub API error ${res.status}`);
-  }
-  // URL pública raw del archivo
-  return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${path}`;
+  const txt = await res.text();
+  let data;
+  try { data = JSON.parse(txt); } catch { throw new Error('respuesta no JSON'); }
+  if (!data || !data.ok) throw new Error(data?.error || 'error al subir foto');
+  return data.url;
 }
 
 // ─── GEMINI via JSONP (mismo mecanismo que el resto de llamadas) ──
@@ -786,7 +775,7 @@ async function guardarProducto(){
   if(_fotoBase64){
     btn.innerHTML='<div style="display:inline-flex;gap:6px;align-items:center"><div class="mini-spin"></div>Subiendo foto…</div>';
     try{
-      fotoUrl = await subirFotoGitHub(_fotoBase64, _fotoMime, _fotoNombre);
+      fotoUrl = await subirFotoDrive(_fotoBase64, _fotoMime, _fotoNombre);
     } catch(e){
       console.warn('Error al subir foto a GitHub:',e);
       toast('No se pudo subir la foto: '+e.message,'warn');
@@ -1030,6 +1019,7 @@ function toast(msg,tipo='ok'){
 
 document.getElementById('modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
 document.getElementById('modalDetalle').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeDetalle(); });
+cargarFotoDefault();
 loadAll();
 </script>
 </body>
