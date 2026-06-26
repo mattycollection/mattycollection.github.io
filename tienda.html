@@ -879,18 +879,58 @@ async function generarSolicitud() {
   const nota = document.getElementById('clienteNota').value.trim();
   pdfNombre  = nombre;
 
+  // Generar PDF localmente
   const pdf = await construirPDF(nombre, nota);
   pdfBlob   = pdf.blob;
 
+  // Mostrar éxito de inmediato
   document.getElementById('checkoutForm').style.display = 'none';
   document.getElementById('checkoutSuccess').style.display = '';
+  document.getElementById('successSubTxt').textContent = `Preparando solicitud para ${nombre}…`;
+
+  // URL local para descarga inmediata mientras sube a Drive
+  const localUrl = URL.createObjectURL(pdfBlob);
+  document.getElementById('btnDownload')._url = localUrl;
+
+  // Subir PDF a Drive via Apps Script
+  const fechaStr = new Date().toISOString().slice(0,10);
+  const fileName = `SolicitudCompra_${nombre.replace(/[^a-zA-Z0-9]/g,'_')}_${fechaStr}.pdf`;
+  let driveUrl = null;
+  try {
+    const base64 = await blobToBase64(pdfBlob);
+    const res    = await fetch(SCRIPT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ action: 'uploadSolicitud', base64, fileName }),
+      redirect: 'follow'
+    });
+    const data = JSON.parse(await res.text());
+    if(data && data.ok) driveUrl = data.viewUrl;
+  } catch(e) {
+    console.warn('No se pudo subir a Drive:', e);
+  }
+
   document.getElementById('successSubTxt').textContent =
     `Solicitud lista para ${nombre}. Descárgala o envíala a Matty por WhatsApp.`;
 
-  const url  = URL.createObjectURL(pdfBlob);
-  const msg  = encodeURIComponent(`Hola Matty, tengo interés en comprar estos productos 😊\n\nMi nombre: ${nombre}\n\nPor favor revisa mi solicitud adjunta.`);
+  // WhatsApp: incluir enlace de Drive si está disponible
+  const linkMsg = driveUrl
+    ? `\n\nVer solicitud en Drive: ${driveUrl}`
+    : '';
+  const msg = encodeURIComponent(
+    `Hola Matty, tengo interés en comprar estos productos 😊\n\nMi nombre: ${nombre}${linkMsg}`
+  );
   document.getElementById('btnWhatsapp').href = `https://wa.me/${WA_NUMBER}?text=${msg}`;
-  document.getElementById('btnDownload')._url = url;
+}
+
+// Convierte un Blob a base64 puro (sin prefijo data:...)
+function blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload  = () => res(reader.result.split(',')[1]);
+    reader.onerror = () => rej(new Error('Error al leer blob'));
+    reader.readAsDataURL(blob);
+  });
 }
 
 function descargarPDF() {
