@@ -533,17 +533,14 @@ async function subirFotoGitHub(base64, mimeType, nombreOriginal) {
   return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${path}`;
 }
 
-// ─── GEMINI PROXY ─────────────────────────────────────────
+// ─── GEMINI via JSONP (mismo mecanismo que el resto de llamadas) ──
 async function gemini(prompt) {
-  const res = await fetch(URL_SCRIPT, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'gemini',prompt}), redirect:'follow'
-  });
-  const txt = await res.text();
-  let data;
-  try { data = JSON.parse(txt); } catch { throw new Error('respuesta no JSON'); }
-  if(!data||!data.ok) throw new Error(data?.error||'error gemini proxy');
-  return data.texto;
+  // GAS acepta GET con JSONP — el prompt se pasa como parámetro
+  // Para prompts largos, lo truncamos a lo esencial
+  const promptCorto = prompt.length > 1800 ? prompt.slice(0, 1800) + '...' : prompt;
+  const res = await api({ action: 'gemini', prompt: promptCorto });
+  if(!res || !res.ok) throw new Error(res?.error || 'error gemini proxy');
+  return res.texto;
 }
 
 const MARGEN_MIN=0.30, MARGEN_MED=0.50, MARGEN_ALTO=0.80;
@@ -599,14 +596,45 @@ async function loadAll(tabDestino){
   document.getElementById('tablaWrap').innerHTML='<div class="loading-state"><div class="spin"></div>Cargando productos…</div>';
   try{
     const [pr,vr,hr]=await Promise.all([api({action:'getProductos'}),api({action:'getVentas'}),api({action:'getHistorial'})]);
-    if(!pr||!pr.ok||!Array.isArray(pr.data)){ return; }
+    if(!pr||!pr.ok||!Array.isArray(pr.data)){
+      console.warn('Respuesta inválida del script, usando datos demo');
+      demoData(); return;
+    }
     productos=pr.data||[];
     ventas=(vr&&vr.ok&&Array.isArray(vr.data))?vr.data:[];
     historial=(hr&&hr.ok&&Array.isArray(hr.data))?hr.data:[];
-  } catch(e){ console.warn('Error al cargar datos:',e); return; }
+  } catch(e){
+    console.warn('Error al cargar datos, usando datos demo:',e);
+    demoData(); return;
+  }
   actualizarStats(); renderTabla();
   if(tab==='estadisticas') dibujarEstadisticas();
   if(tab==='historial') renderHistorial();
+}
+
+function demoData(){
+  productos=[
+    {row:2,nombre:'Vestido Floral S',cantidad:34,costo:850,precio:1800,fotoUrl:'',fecha:'2025-01-10'},
+    {row:3,nombre:'Blusa Lino Beige M',cantidad:22,costo:420,precio:980,fotoUrl:'',fecha:'2025-01-12'},
+    {row:4,nombre:'Pantalón Palazzo L',cantidad:8,costo:650,precio:1100,fotoUrl:'',fecha:'2025-01-15'},
+    {row:5,nombre:'Cartera Tejida',cantidad:45,costo:380,precio:750,fotoUrl:'',fecha:'2025-01-18'},
+    {row:6,nombre:'Sandalias Doradas 38',cantidad:3,costo:900,precio:1650,fotoUrl:'',fecha:'2025-01-20'},
+    {row:7,nombre:'Set Aretes Perla',cantidad:60,costo:120,precio:350,fotoUrl:'',fecha:'2025-01-22'},
+  ];
+  ventas=[
+    {producto:'Vestido Floral S',cantidad:14,fecha:'2025-02-01'},
+    {producto:'Blusa Lino Beige M',cantidad:9,fecha:'2025-02-03'},
+    {producto:'Cartera Tejida',cantidad:20,fecha:'2025-02-06'},
+    {producto:'Set Aretes Perla',cantidad:15,fecha:'2025-02-08'},
+    {producto:'Sandalias Doradas 38',cantidad:2,fecha:'2025-02-10'},
+    {producto:'Vestido Floral S',cantidad:6,fecha:'2025-02-12'},
+  ];
+  historial=[
+    {accion:'Producto creado',detalle:'Vestido Floral S',fecha:'2025-01-10 09:32',tipo:'create'},
+    {accion:'Venta registrada',detalle:'14× Vestido Floral S',fecha:'2025-02-01 11:20',tipo:'sale'},
+  ];
+  actualizarStats(); renderTabla();
+  toast('Modo demo — script no disponible o no configurado','warn');
 }
 
 function actualizarStats(){
