@@ -605,7 +605,23 @@ body{background:var(--blanco);color:var(--texto);font-family:'Jost',sans-serif;m
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
 const WA_NUMBER  = "18299162437";
-const DESCUENTO_OFERTA = 0.15; // 15% descuento para mostrar en "ofertas"
+const DESCUENTO_OFERTA = 0.15;
+
+// Foto por defecto desde Drive — se carga al iniciar
+let FOTO_DEFAULT = '#';
+
+async function cargarFotoDefault() {
+  try {
+    const r = await api({ action: 'getFotoDefault' });
+    if (r && r.ok && r.url) {
+      FOTO_DEFAULT = r.url;
+      // Actualizar imágenes que quedaron con placeholder
+      document.querySelectorAll('img[data-foto-default]').forEach(img => {
+        img.src = FOTO_DEFAULT;
+      });
+    }
+  } catch(e) { console.warn('No se pudo cargar foto por defecto:', e); }
+}
 
 let productos  = [];
 let ventas     = [];
@@ -728,10 +744,15 @@ function renderOfertas(ofertas) {
     const precio = +p.precio;
     const precioOferta = Math.round(precio * (1 - DESCUENTO_OFERTA));
     const pct = Math.round(DESCUENTO_OFERTA * 100);
-    const emoji = emojiProducto(p.nombre);
+    const imgSrc = p.fotoUrl || FOTO_DEFAULT;
     const inCart = carrito.find(c=>c.row===p.row);
     return `<div class="oferta-card">
-      <div class="oferta-card-emoji">${emoji}</div>
+      <div style="height:100px;border-radius:8px;overflow:hidden;margin-bottom:10px;background:var(--crema-dark)">
+        <img src="${esc(imgSrc)}" alt="${esc(p.nombre)}"
+          ${!p.fotoUrl?'data-foto-default="1"':''}
+          onerror="this.onerror=null;if(FOTO_DEFAULT&&FOTO_DEFAULT!='#')this.src=FOTO_DEFAULT"
+          style="width:100%;height:100%;object-fit:cover;display:block">
+      </div>
       <div class="oferta-card-name">${esc(p.nombre)}</div>
       <div class="oferta-card-prices">
         <span class="oferta-card-new">RD$${precioOferta.toLocaleString('es-DO')}</span>
@@ -747,19 +768,21 @@ function renderOfertas(ofertas) {
   }).join('');
 }
 
-// ─── CARD HTML ────────────────────────────────────────────
 function cardHTML(p, ventaMap, badge) {
-  const qty   = +p.cantidad||0;
+  const qty    = +p.cantidad||0;
   const precio = +p.precio||0;
-  const emoji = emojiProducto(p.nombre);
   const inCart = carrito.find(c=>c.row===p.row);
   const vendidos = ventaMap[p.nombre]||0;
+  const imgSrc = p.fotoUrl || FOTO_DEFAULT;
   let badgeHtml = '';
   if(badge==='new') badgeHtml = '<span class="product-badge badge-new">Nuevo</span>';
   else if(badge==='hot' && vendidos>5) badgeHtml = `<span class="product-badge badge-hot">🔥 ${vendidos} vendidos</span>`;
   return `<div class="product-card">
-    <div class="product-img">
-      ${emoji}
+    <div class="product-img" style="padding:0;overflow:hidden">
+      <img src="${esc(imgSrc)}" alt="${esc(p.nombre)}"
+        ${!p.fotoUrl?'data-foto-default="1"':''}
+        onerror="this.onerror=null;if(FOTO_DEFAULT&&FOTO_DEFAULT!='#')this.src=FOTO_DEFAULT"
+        style="width:100%;height:100%;object-fit:cover;display:block">
       ${badgeHtml}
     </div>
     <div class="product-body">
@@ -787,8 +810,8 @@ function agregarCarrito(row) {
   if(!p) return;
   const existe = carrito.find(c=>c.row===row);
   if(existe) { existe.qty = Math.min(existe.qty+1, +p.cantidad); }
-  else { carrito.push({row:p.row,nombre:p.nombre,precio:+p.precio||0,emoji:emojiProducto(p.nombre),qty:1,maxQty:+p.cantidad}); }
-  toast(`${emojiProducto(p.nombre)} ${p.nombre} en cesta`,'ok');
+  else { carrito.push({row:p.row,nombre:p.nombre,precio:+p.precio||0,fotoUrl:p.fotoUrl||'',qty:1,maxQty:+p.cantidad}); }
+  toast(`✓ ${p.nombre} en cesta`,'ok');
   actualizarCarrito();
   renderTodo();
 }
@@ -798,8 +821,8 @@ function agregarOferta(row, precioOferta) {
   if(!p) return;
   const existe = carrito.find(c=>c.row===row);
   if(existe) { existe.qty = Math.min(existe.qty+1, +p.cantidad); }
-  else { carrito.push({row:p.row,nombre:p.nombre,precio:precioOferta,emoji:emojiProducto(p.nombre),qty:1,maxQty:+p.cantidad,esOferta:true}); }
-  toast(`${emojiProducto(p.nombre)} ${p.nombre} en cesta (oferta)`,'ok');
+  else { carrito.push({row:p.row,nombre:p.nombre,precio:precioOferta,fotoUrl:p.fotoUrl||'',qty:1,maxQty:+p.cantidad,esOferta:true}); }
+  toast(`✓ ${p.nombre} en cesta (oferta)`,'ok');
   actualizarCarrito();
   renderTodo();
 }
@@ -838,7 +861,12 @@ function renderCartItems() {
   }
   cont.innerHTML = `<div style="padding:8px 0">` + carrito.map(item => `
     <div class="cart-item" id="citem-${item.row}">
-      <div class="cart-item-emoji">${item.emoji}</div>
+      <div class="cart-item-emoji">
+        <img src="${esc(item.fotoUrl||FOTO_DEFAULT)}"
+          alt="${esc(item.nombre)}"
+          onerror="this.onerror=null;if(FOTO_DEFAULT&&FOTO_DEFAULT!='#')this.src=FOTO_DEFAULT"
+          style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block">
+      </div>
       <div class="cart-item-info">
         <div class="cart-item-name">${esc(item.nombre)}${item.esOferta?'<span style="font-size:10px;color:var(--rojo);margin-left:6px">OFERTA</span>':''}</div>
         <div class="cart-item-price">RD$${item.precio.toLocaleString('es-DO')} c/u</div>
@@ -1119,7 +1147,7 @@ function toast(msg, tipo='ok') {
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ─── INIT ─────────────────────────────────────────────────
-cargarDatos();
+cargarFotoDefault().finally(() => cargarDatos());
 </script>
 </body>
 </html>
