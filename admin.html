@@ -651,7 +651,7 @@ function renderTabla(){
     const mgHtml=mgPct!==null?`<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`:'<span style="color:var(--muted);font-size:11px">—</span>';
     const pill=qty===0?`<span class="pill pill-red">Sin stock</span>`:qty<10?`<span class="pill pill-amber">Stock bajo</span>`:`<span class="pill pill-green">Disponible</span>`;
     const fotoSrc = p.fotoUrl || FOTO_DEFAULT;
-    const fotoHtml = `<img class="prod-thumb" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.src='${FOTO_DEFAULT}'">`;
+    const fotoHtml = `<img class="prod-thumb" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;this.src=FOTO_DEFAULT">`;
     h+=`<tr>
       <td>${fotoHtml}</td>
       <td style="color:var(--muted);font-size:12px">${i+1}</td>
@@ -818,7 +818,7 @@ function verDetalle(row){
   // Foto en detalle
   const fWrap=document.getElementById('detalleFotoWrap');
   const fotoSrc = p.fotoUrl || FOTO_DEFAULT;
-  fWrap.innerHTML=`<img class="detail-foto" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.src='${FOTO_DEFAULT}'">`;
+  fWrap.innerHTML=`<img class="detail-foto" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;this.src=FOTO_DEFAULT">`;
 
   const costo=+p.costo||0, precio=+p.precio||0, qty=+p.cantidad||0;
   const mg=costo&&precio?Math.round(margenSobreVenta(costo,precio)*100):null;
