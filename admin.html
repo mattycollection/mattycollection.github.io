@@ -6,6 +6,7 @@
 <title>Matty Collection · Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
     --verde:       #1A3D2B;
@@ -516,62 +517,83 @@ async function cargarFotoDefault() {
   }
 }
 
-// Sube una foto a Google Drive via form POST (evita CORS con GAS)
-function subirFotoDrive(base64, mimeType, fileName) {
+// ─── SUBIR FOTO DIRECTO A GOOGLE DRIVE (Drive API + GIS) ──────────────────
+// Usa Google Identity Services para obtener un access token temporal,
+// luego sube directamente a la carpeta de Drive con la API REST.
+// El usuario verá un popup de Google para autorizar el acceso.
+
+const DRIVE_FOLDER_ID  = '1ZvGBmpS79qAapWwT34Y81FiBJXGrR-WH';
+// Client ID de Google Cloud — debe tener Drive API habilitada y
+// https://mattycollection.github.io en los orígenes autorizados.
+// Crear en: console.cloud.google.com → APIs & Services → Credentials → OAuth 2.0 Client ID
+const GOOGLE_CLIENT_ID = '59853422576-45mreogh9bd7rlu5qu75eh8do246bpn9.apps.googleusercontent.com';
+
+let _gisToken = null;
+let _gisTokenExpiry = 0;
+
+function obtenerTokenDrive() {
   return new Promise((resolve, reject) => {
-    // Crear iframe oculto para recibir la respuesta del form
-    const iframeName = '_upload_' + Date.now();
-    const iframe = document.createElement('iframe');
-    iframe.name = iframeName;
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    // Crear form que apunta al iframe
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = URL_SCRIPT;
-    form.target = iframeName;
-    form.style.display = 'none';
-
-    const campos = { action: 'uploadFoto', base64, mimeType, fileName };
-    Object.entries(campos).forEach(([k, v]) => {
-      const inp = document.createElement('input');
-      inp.type = 'hidden';
-      inp.name = k;
-      inp.value = v;
-      form.appendChild(inp);
-    });
-
-    document.body.appendChild(form);
-
-    const timer = setTimeout(() => {
-      cleanup(); reject(new Error('timeout al subir foto'));
-    }, 30000);
-
-    function cleanup() {
-      clearTimeout(timer);
-      iframe.removeEventListener('load', onLoad);
-      document.body.removeChild(form);
-      setTimeout(() => document.body.removeChild(iframe), 500);
+    if (_gisToken && Date.now() < _gisTokenExpiry) {
+      resolve(_gisToken); return;
     }
-
-    function onLoad() {
-      try {
-        const txt = iframe.contentDocument?.body?.innerText ||
-                    iframe.contentWindow?.document?.body?.innerText || '';
-        const data = JSON.parse(txt);
-        cleanup();
-        if (data && data.ok) resolve(data.url);
-        else reject(new Error(data?.error || 'error al subir foto'));
-      } catch(e) {
-        cleanup();
-        reject(new Error('No se pudo leer respuesta del servidor'));
+    if (!GOOGLE_CLIENT_ID) {
+      reject(new Error('GOOGLE_CLIENT_ID no configurado — ver instrucciones en el código'));
+      return;
+    }
+    if (!window.google?.accounts?.oauth2) {
+      reject(new Error('Google Identity Services no cargado'));
+      return;
+    }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: (resp) => {
+        if (resp.error) { reject(new Error(resp.error)); return; }
+        _gisToken = resp.access_token;
+        _gisTokenExpiry = Date.now() + (resp.expires_in - 60) * 1000;
+        resolve(_gisToken);
       }
-    }
-
-    iframe.addEventListener('load', onLoad);
-    form.submit();
+    });
+    client.requestAccessToken();
   });
+}
+
+async function subirFotoDrive(base64, mimeType, fileName) {
+  const token = await obtenerTokenDrive();
+
+  // Convertir base64 a Blob binario
+  const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  const blob  = new Blob([bytes], { type: mimeType });
+
+  // Multipart upload a Drive API
+  const metadata = JSON.stringify({
+    name: fileName,
+    parents: [DRIVE_FOLDER_ID]
+  });
+
+  const form = new FormData();
+  form.append('metadata', new Blob([metadata], { type: 'application/json' }));
+  form.append('file', blob);
+
+  const res = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: form }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'Error Drive API ' + res.status);
+  }
+  const data = await res.json();
+  const fileId = data.id;
+
+  // Hacer el archivo público (Anyone with link can view)
+  await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role: 'reader', type: 'anyone' })
+  });
+
+  return `https://drive.google.com/uc?export=view&id=${fileId}`;
 }
 
 // ─── GEMINI via JSONP (mismo mecanismo que el resto de llamadas) ──
