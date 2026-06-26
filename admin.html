@@ -500,7 +500,7 @@ const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOj
 // La URL se construye via el GAS al arrancar; mientras tanto se usa
 // la URL de búsqueda por nombre en la carpeta (el GAS la resuelve al primer uso).
 // Si tienes el File ID del archivo, puedes hardcodearlo aquí:
-// let FOTO_DEFAULT = "https://drive.google.com/uc?export=view&id=TU_FILE_ID";
+// let FOTO_DEFAULT = "https://lh3.googleusercontent.com/d/TU_FILE_ID";
 let FOTO_DEFAULT = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
 // Carga la URL real de producto_sin_foto.png desde Drive al arrancar
@@ -593,7 +593,7 @@ async function subirFotoDrive(base64, mimeType, fileName) {
     body: JSON.stringify({ role: 'reader', type: 'anyone' })
   });
 
-  return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  return `https://lh3.googleusercontent.com/d/${fileId}`;
 }
 
 // ─── GEMINI via JSONP (mismo mecanismo que el resto de llamadas) ──
@@ -610,6 +610,20 @@ const MARGEN_MIN=0.30, MARGEN_MED=0.50, MARGEN_ALTO=0.80;
 function precioConMargen(c,m){ return c/(1-m); }
 function margenSobreVenta(c,p){ if(!p||p<=0) return 0; return (p-c)/p; }
 function dop(n){ return 'RD$'+(+n||0).toLocaleString('es-DO',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+
+// Convierte cualquier URL de Drive al formato embebible en <img>
+function driveImgUrl(url) {
+  if (!url) return '';
+  // Ya está en formato lh3
+  if (url.includes('lh3.googleusercontent.com')) return url;
+  // Formato uc?export=view&id=ID
+  const m1 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m1) return 'https://lh3.googleusercontent.com/d/' + m1[1];
+  // Formato /file/d/ID/view
+  const m2 = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (m2) return 'https://lh3.googleusercontent.com/d/' + m2[1];
+  return url;
+}
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 let productos=[], ventas=[], historial=[], charts={};
@@ -724,7 +738,7 @@ function renderTabla(){
     const mgPct=mg!==null?Math.round(mg*100):null;
     const mgHtml=mgPct!==null?`<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`:'<span style="color:var(--muted);font-size:11px">—</span>';
     const pill=qty===0?`<span class="pill pill-red">Sin stock</span>`:qty<10?`<span class="pill pill-amber">Stock bajo</span>`:`<span class="pill pill-green">Disponible</span>`;
-    const fotoSrc2 = p.fotoUrl || FOTO_DEFAULT || FOTO_DEFAULT;
+    const fotoSrc2 = driveImgUrl(p.fotoUrl) || FOTO_DEFAULT;
     const fotoHtml = `<img class="prod-thumb" src="${esc(fotoSrc2)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;if(FOTO_DEFAULT)this.src=FOTO_DEFAULT" ${!p.fotoUrl?'data-foto-default="1"':''}>`;
     h+=`<tr>
       <td>${fotoHtml}</td>
@@ -908,7 +922,7 @@ function verDetalle(row){
 
   // Foto en detalle
   const fWrap=document.getElementById('detalleFotoWrap');
-  const fotoSrc = p.fotoUrl || FOTO_DEFAULT || FOTO_DEFAULT;
+  const fotoSrc = driveImgUrl(p.fotoUrl) || FOTO_DEFAULT;
   fWrap.innerHTML = `<img class="detail-foto" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;if(FOTO_DEFAULT)this.src=FOTO_DEFAULT" ${!p.fotoUrl?'data-foto-default="1"':''}>`;
 
   const costo=+p.costo||0, precio=+p.precio||0, qty=+p.cantidad||0;
