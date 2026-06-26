@@ -108,6 +108,7 @@
   .pill-green { background:rgba(45,107,71,.1); color:var(--verde-pale); border:1px solid rgba(45,107,71,.2); }
   .pill-amber { background:rgba(230,126,34,.1); color:#c0711d; border:1px solid rgba(230,126,34,.2); }
   .pill-red   { background:rgba(192,57,43,.1);  color:var(--rojo); border:1px solid rgba(192,57,43,.2); }
+  .pill-oferta { background:rgba(192,57,43,.1); color:var(--rojo); border:1px solid rgba(192,57,43,.2); font-weight:700; }
   .row-actions { display:flex; gap:7px; }
 
   /* FOTO EN TABLA */
@@ -447,7 +448,27 @@
     </div>
     <div class="form-group">
       <label>Precio de Venta (DOP)</label>
-      <input class="inp" id="fPrecio" type="number" min="0" step="0.01" placeholder="0.00" oninput="actualizarMargenModal()">
+      <input class="inp" id="fPrecio" type="number" min="0" step="0.01" placeholder="0.00" oninput="actualizarMargenModal();actualizarOfertaPreview()">
+    </div>
+
+    <!-- OFERTA -->
+    <div class="form-group">
+      <label>Descuento / Oferta</label>
+      <select class="inp" id="fOferta" onchange="actualizarOfertaPreview()">
+        <option value="0">Sin oferta</option>
+        <option value="5">5% de descuento</option>
+        <option value="10">10% de descuento</option>
+        <option value="15">15% de descuento</option>
+        <option value="20">20% de descuento</option>
+        <option value="25">25% de descuento</option>
+        <option value="30">30% de descuento</option>
+      </select>
+    </div>
+    <div id="ofertaPreview" style="display:none;background:rgba(192,57,43,.07);border:1px solid rgba(192,57,43,.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;display:none">
+      <span style="color:var(--muted);text-decoration:line-through" id="ofertaPrecioOriginal"></span>
+      &nbsp;→&nbsp;
+      <strong style="color:var(--rojo);font-size:16px" id="ofertaPrecioFinal"></strong>
+      <span style="color:var(--rojo);font-weight:600;margin-left:6px" id="ofertaPct"></span>
     </div>
 
     <div class="precio-sugerido" id="precioSugerido">
@@ -729,15 +750,19 @@ function renderTabla(){
   if(!productos.length){ w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><p>No hay productos aún — agrega el primero</p></div>`; return; }
   if(!lista.length){ w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No se encontraron productos para "<strong>${esc(q)}</strong>"</p></div>`; return; }
 
-  let h=`<table><thead><tr><th>Foto</th><th>#</th><th>Nombre</th><th>Stock</th><th>Costo</th><th>Precio</th><th>Margen</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
+  let h=`<table><thead><tr><th>Foto</th><th>#</th><th>Nombre</th><th>Stock</th><th>Costo</th><th>Precio</th><th>Oferta</th><th>Margen</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
   lista.forEach((p,i)=>{
     const qty=+p.cantidad||0;
     const cost=+p.costo||0;
     const prec=+p.precio||0;
+    const ofertaPct=+p.oferta||0;
     const mg=prec?margenSobreVenta(cost,prec):null;
     const mgPct=mg!==null?Math.round(mg*100):null;
     const mgHtml=mgPct!==null?`<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`:'<span style="color:var(--muted);font-size:11px">—</span>';
     const pill=qty===0?`<span class="pill pill-red">Sin stock</span>`:qty<10?`<span class="pill pill-amber">Stock bajo</span>`:`<span class="pill pill-green">Disponible</span>`;
+    const ofertaHtml=ofertaPct>0
+      ?`<span class="pill pill-oferta">-${ofertaPct}%</span><br><span style="font-size:11px;color:var(--muted)">${dop(Math.round(prec*(1-ofertaPct/100)))}</span>`
+      :'<span style="color:var(--muted);font-size:11px">—</span>';
     const fotoSrc2 = driveImgUrl(p.fotoUrl) || FOTO_DEFAULT;
     const fotoHtml = `<img class="prod-thumb" src="${esc(fotoSrc2)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;if(FOTO_DEFAULT)this.src=FOTO_DEFAULT" ${!p.fotoUrl?'data-foto-default="1"':''}>`;
     h+=`<tr>
@@ -747,6 +772,7 @@ function renderTabla(){
       <td><strong>${qty}</strong> <span style="color:var(--muted);font-size:11px">und</span></td>
       <td class="precio-col">${cost?dop(cost):'<span style="color:var(--muted)">—</span>'}</td>
       <td class="precio-col">${prec?dop(prec):'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${ofertaHtml}</td>
       <td>${mgHtml}</td>
       <td>${pill}</td>
       <td><div class="row-actions">
@@ -841,6 +867,7 @@ function openModal(row){
   resetFoto();
   document.getElementById('precioSugerido').classList.remove('show');
   document.getElementById('margenModal').textContent='';
+  document.getElementById('ofertaPreview').style.display='none';
   if(row){
     const p=productos.find(x=>x.row===row);
     document.getElementById('modalTitulo').textContent='Editar Producto';
@@ -849,9 +876,11 @@ function openModal(row){
     document.getElementById('fCantidad').value=p.cantidad;
     document.getElementById('fCosto').value=p.costo||'';
     document.getElementById('fPrecio').value=p.precio||'';
+    document.getElementById('fOferta').value=p.oferta||0;
     if(p.fotoUrl) cargarFotoExistente(p.fotoUrl);
     if(p.costo) calcularSugerencias();
     actualizarMargenModal();
+    actualizarOfertaPreview();
   } else {
     document.getElementById('modalTitulo').textContent='Nuevo Producto';
     document.getElementById('editRow').value='';
@@ -859,6 +888,7 @@ function openModal(row){
     document.getElementById('fCantidad').value='';
     document.getElementById('fCosto').value='';
     document.getElementById('fPrecio').value='';
+    document.getElementById('fOferta').value='0';
   }
   document.getElementById('modal').classList.add('open');
 }
@@ -870,6 +900,7 @@ async function guardarProducto(){
   const cantidad=document.getElementById('fCantidad').value;
   const costo=document.getElementById('fCosto').value;
   const precio=document.getElementById('fPrecio').value;
+  const oferta=document.getElementById('fOferta').value||'0';
   if(!nombre){ toast('Ingresa el nombre del producto','warn'); return; }
   const row=document.getElementById('editRow').value;
   const btn=document.getElementById('btnGuardar');
@@ -893,13 +924,13 @@ async function guardarProducto(){
 
   let guardado=false;
   try{
-    const res=await api({action:row?'editProducto':'addProducto',nombre,cantidad,costo,precio,fotoUrl,row});
+    const res=await api({action:row?'editProducto':'addProducto',nombre,cantidad,costo,precio,fotoUrl,oferta,row});
     if(res&&res.ok){ toast(row?'Producto actualizado ✓':'Producto creado ✓','ok'); guardado=true; }
   } catch(e){ console.warn('Error al guardar:',e); }
   if(guardado){ closeModal(); loadAll(); return; }
   // Fallback local
-  if(row){ const p=productos.find(x=>x.row===+row); if(p){p.nombre=nombre;p.cantidad=+cantidad;p.costo=+costo;p.precio=+precio;p.fotoUrl=fotoUrl;} }
-  else { productos.push({row:Date.now(),nombre,cantidad:+cantidad,costo:+costo,precio:+precio,fotoUrl,fecha:new Date().toISOString().slice(0,10)}); }
+  if(row){ const p=productos.find(x=>x.row===+row); if(p){p.nombre=nombre;p.cantidad=+cantidad;p.costo=+costo;p.precio=+precio;p.fotoUrl=fotoUrl;p.oferta=+oferta;} }
+  else { productos.push({row:Date.now(),nombre,cantidad:+cantidad,costo:+costo,precio:+precio,fotoUrl,oferta:+oferta,fecha:new Date().toISOString().slice(0,10)}); }
   toast(row?'Actualizado (offline)':'Creado (offline)','warn');
   closeModal(); actualizarStats(); renderTabla();
 }
@@ -1103,6 +1134,18 @@ async function pedirSugerenciaIA(costo){
   }
 }
 function elegirPrecio(val){ document.getElementById('fPrecio').value=val; actualizarMargenModal(); }
+function actualizarOfertaPreview() {
+  const precio  = +document.getElementById('fPrecio').value || 0;
+  const oferta  = +document.getElementById('fOferta').value || 0;
+  const preview = document.getElementById('ofertaPreview');
+  if (!precio || !oferta) { preview.style.display = 'none'; return; }
+  const precioFinal = Math.round(precio * (1 - oferta / 100));
+  const ahorro      = precio - precioFinal;
+  preview.style.display = 'block';
+  document.getElementById('ofertaPrecioOriginal').textContent = dop(precio);
+  document.getElementById('ofertaPrecioFinal').textContent    = dop(precioFinal);
+  document.getElementById('ofertaPct').textContent            = `-${oferta}% · Ahorro: ${dop(ahorro)}`;
+}
 function actualizarMargenModal(){
   const costo=+document.getElementById('fCosto').value||0, precio=+document.getElementById('fPrecio').value||0;
   const el=document.getElementById('margenModal');
