@@ -500,7 +500,7 @@ const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOj
 // la URL de búsqueda por nombre en la carpeta (el GAS la resuelve al primer uso).
 // Si tienes el File ID del archivo, puedes hardcodearlo aquí:
 // let FOTO_DEFAULT = "https://drive.google.com/uc?export=view&id=TU_FILE_ID";
-let FOTO_DEFAULT = "";
+let FOTO_DEFAULT = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
 // Carga la URL real de producto_sin_foto.png desde Drive al arrancar
 async function cargarFotoDefault() {
@@ -509,9 +509,7 @@ async function cargarFotoDefault() {
     if (r && r.ok && r.url) {
       FOTO_DEFAULT = r.url;
       // Refrescar miniaturas que ya se renderizaron con src vacío
-      document.querySelectorAll('img[data-foto-default]').forEach(img => {
-        if (!img.src || img.src === window.location.href) img.src = FOTO_DEFAULT;
-      });
+      document.querySelectorAll('img[data-foto-default]').forEach(img => { img.src = FOTO_DEFAULT; });
     }
   } catch(e) {
     console.warn('No se pudo cargar foto por defecto:', e);
@@ -661,7 +659,7 @@ function renderTabla(){
     const mgPct=mg!==null?Math.round(mg*100):null;
     const mgHtml=mgPct!==null?`<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`:'<span style="color:var(--muted);font-size:11px">—</span>';
     const pill=qty===0?`<span class="pill pill-red">Sin stock</span>`:qty<10?`<span class="pill pill-amber">Stock bajo</span>`:`<span class="pill pill-green">Disponible</span>`;
-    const fotoSrc2 = p.fotoUrl || FOTO_DEFAULT || '#';
+    const fotoSrc2 = p.fotoUrl || FOTO_DEFAULT || FOTO_DEFAULT;
     const fotoHtml = `<img class="prod-thumb" src="${esc(fotoSrc2)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;if(FOTO_DEFAULT)this.src=FOTO_DEFAULT" ${!p.fotoUrl?'data-foto-default="1"':''}>`;
     h+=`<tr>
       <td>${fotoHtml}</td>
@@ -828,7 +826,7 @@ function verDetalle(row){
 
   // Foto en detalle
   const fWrap=document.getElementById('detalleFotoWrap');
-  const fotoSrc = p.fotoUrl || FOTO_DEFAULT || '#';
+  const fotoSrc = p.fotoUrl || FOTO_DEFAULT || FOTO_DEFAULT;
   fWrap.innerHTML = `<img class="detail-foto" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;if(FOTO_DEFAULT)this.src=FOTO_DEFAULT" ${!p.fotoUrl?'data-foto-default="1"':''}>`;
 
   const costo=+p.costo||0, precio=+p.precio||0, qty=+p.cantidad||0;
