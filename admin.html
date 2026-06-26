@@ -495,16 +495,26 @@
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
 
 // ─── FOTOS EN DRIVE ───────────────────────────────────────
-// Las fotos se suben a Google Drive via el Apps Script (POST).
-// La foto por defecto vive en la misma carpeta de Drive.
-let FOTO_DEFAULT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23EDE5D4' rx='8'/%3E%3Crect x='60' y='55' width='80' height='65' rx='6' fill='%23C9A84C' opacity='.25'/%3E%3Ccircle cx='82' cy='75' r='8' fill='%23C9A84C' opacity='.4'/%3E%3Cpolygon points='60,120 90,88 108,108 125,92 140,120' fill='%23C9A84C' opacity='.35'/%3E%3Ctext x='100' y='148' font-family='sans-serif' font-size='11' fill='%237A9B87' text-anchor='middle'%3ESin foto%3C/text%3E%3C/svg%3E";
+// producto_sin_foto.png vive en la carpeta de fotos de Drive.
+// Se obtiene su URL al arrancar via getFotoDefault en el script.
+// Mientras carga se usa un placeholder temporal que no hace request HTTP.
+let FOTO_DEFAULT = "";
 
-// Carga la URL real de producto_sin_foto.png desde Drive al arrancar
+// Devuelve el src a usar — si aún no hay URL de Drive, retorna un CSS placeholder
+function fotoSrc(url) {
+  return url || FOTO_DEFAULT || "";
+}
+
+// Carga la URL de producto_sin_foto.png desde Drive (JSONP, sin CORS)
 async function cargarFotoDefault() {
   try {
     const r = await api({ action: 'getFotoDefault' });
-    if (r && r.ok && r.url) FOTO_DEFAULT = r.url;
-  } catch(e) { /* mantener el SVG inline como fallback */ }
+    if (r && r.ok && r.url) {
+      FOTO_DEFAULT = r.url;
+    }
+  } catch(e) {
+    console.warn('No se pudo cargar foto por defecto:', e);
+  }
 }
 
 // Sube una foto a Google Drive via POST al Apps Script
@@ -650,8 +660,10 @@ function renderTabla(){
     const mgPct=mg!==null?Math.round(mg*100):null;
     const mgHtml=mgPct!==null?`<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`:'<span style="color:var(--muted);font-size:11px">—</span>';
     const pill=qty===0?`<span class="pill pill-red">Sin stock</span>`:qty<10?`<span class="pill pill-amber">Stock bajo</span>`:`<span class="pill pill-green">Disponible</span>`;
-    const fotoSrc = p.fotoUrl || FOTO_DEFAULT;
-    const fotoHtml = `<img class="prod-thumb" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;this.src=FOTO_DEFAULT">`;
+    const fotoSrc2 = p.fotoUrl || FOTO_DEFAULT;
+    const fotoHtml = fotoSrc2
+      ? `<img class="prod-thumb" src="${esc(fotoSrc2)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;this.src=FOTO_DEFAULT||''">`
+      : `<div class="prod-thumb" style="background:var(--crema);display:flex;align-items:center;justify-content:center;font-size:20px">📦</div>`;
     h+=`<tr>
       <td>${fotoHtml}</td>
       <td style="color:var(--muted);font-size:12px">${i+1}</td>
@@ -818,7 +830,9 @@ function verDetalle(row){
   // Foto en detalle
   const fWrap=document.getElementById('detalleFotoWrap');
   const fotoSrc = p.fotoUrl || FOTO_DEFAULT;
-  fWrap.innerHTML=`<img class="detail-foto" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;this.src=FOTO_DEFAULT">`;
+  fWrap.innerHTML = fotoSrc
+    ? `<img class="detail-foto" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.onerror=null;this.src=FOTO_DEFAULT||''">`
+    : '';
 
   const costo=+p.costo||0, precio=+p.precio||0, qty=+p.cantidad||0;
   const mg=costo&&precio?Math.round(margenSobreVenta(costo,precio)*100):null;
@@ -1019,8 +1033,8 @@ function toast(msg,tipo='ok'){
 
 document.getElementById('modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
 document.getElementById('modalDetalle').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeDetalle(); });
-cargarFotoDefault();
-loadAll();
+// Cargar foto por defecto primero, luego mostrar productos con la URL correcta
+cargarFotoDefault().finally(() => loadAll());
 </script>
 </body>
 </html>
