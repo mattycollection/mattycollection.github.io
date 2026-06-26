@@ -742,7 +742,7 @@ function renderOfertas(ofertas) {
     const precio = +p.precio;
     const precioOferta = Math.round(precio * (1 - DESCUENTO_OFERTA));
     const pct = Math.round(DESCUENTO_OFERTA * 100);
-    const imgSrc = p.fotoUrl || FOTO_DEFAULT;
+    const imgSrc = driveImgUrl(p.fotoUrl) || FOTO_DEFAULT;
     const inCart = carrito.find(c=>c.row===p.row);
     return `<div class="oferta-card">
       <div style="height:100px;border-radius:8px;overflow:hidden;margin-bottom:10px;background:var(--crema-dark)">
@@ -771,7 +771,7 @@ function cardHTML(p, ventaMap, badge) {
   const precio = +p.precio||0;
   const inCart = carrito.find(c=>c.row===p.row);
   const vendidos = ventaMap[p.nombre]||0;
-  const imgSrc = p.fotoUrl || FOTO_DEFAULT;
+  const imgSrc = driveImgUrl(p.fotoUrl) || FOTO_DEFAULT;
   let badgeHtml = '';
   if(badge==='new') badgeHtml = '<span class="product-badge badge-new">Nuevo</span>';
   else if(badge==='hot' && vendidos>5) badgeHtml = `<span class="product-badge badge-hot">🔥 ${vendidos} vendidos</span>`;
@@ -860,7 +860,7 @@ function renderCartItems() {
   cont.innerHTML = `<div style="padding:8px 0">` + carrito.map(item => `
     <div class="cart-item" id="citem-${item.row}">
       <div class="cart-item-emoji">
-        <img src="${esc(item.fotoUrl||FOTO_DEFAULT)}"
+        <img src="${esc(driveImgUrl(item.fotoUrl)||FOTO_DEFAULT)}"
           alt="${esc(item.nombre)}"
           onerror="this.onerror=null;if(FOTO_DEFAULT)this.src=FOTO_DEFAULT"
           style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block">
@@ -1142,6 +1142,20 @@ function toast(msg, tipo='ok') {
   setTimeout(()=>t.remove(), 2800);
 }
 
+
+// Convierte cualquier URL de Drive al formato embebible en <img>
+function driveImgUrl(url) {
+  if (!url) return '';
+  // Ya está en formato lh3
+  if (url.includes('lh3.googleusercontent.com')) return url;
+  // Formato uc?export=view&id=ID
+  const m1 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m1) return 'https://lh3.googleusercontent.com/d/' + m1[1];
+  // Formato /file/d/ID/view
+  const m2 = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (m2) return 'https://lh3.googleusercontent.com/d/' + m2[1];
+  return url;
+}
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ─── INIT ─────────────────────────────────────────────────
