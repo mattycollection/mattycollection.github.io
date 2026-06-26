@@ -605,8 +605,6 @@ body{background:var(--blanco);color:var(--texto);font-family:'Jost',sans-serif;m
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
 const WA_NUMBER  = "18299162437";
-const DESCUENTO_OFERTA = 0.15;
-
 // Foto por defecto desde Drive — se carga al iniciar
 let FOTO_DEFAULT = 'https://lh3.googleusercontent.com/d/1TI6rRGp50c-4MwGxB68UYnh6YG4bnJQz';
 
@@ -694,6 +692,7 @@ function demoVentas() {
 
 // ─── RENDER TODO ──────────────────────────────────────────
 function renderTodo() {
+  // Mapa de ventas: producto → total unidades vendidas
   const ventaMap = {};
   ventas.forEach(v => { ventaMap[v.producto] = (ventaMap[v.producto]||0) + (+v.cantidad||1); });
 
@@ -705,21 +704,30 @@ function renderTodo() {
     ? `<div class="product-grid">${novedades.map(p => cardHTML(p, ventaMap, 'new')).join('')}</div>`
     : emptyHTML('Sin novedades aún');
 
-  // OFERTAS: productos con margen > 30% → mostrar con 15% descuento
-  const ofertas = productos
-    .filter(p => +p.precio && +p.costo && ((+p.precio - +p.costo) / +p.precio) > 0.3)
-    .slice(0, 6);
-  renderOfertas(ofertas);
+  // OFERTAS: solo productos que tengan p.oferta > 0 en el Sheet
+  const ofertasSec = document.getElementById('ofertas');
+  const conOferta = productos.filter(p => +p.oferta > 0 && +p.precio > 0 && +p.cantidad > 0);
+  if(conOferta.length === 0) {
+    ofertasSec.style.display = 'none';
+  } else {
+    ofertasSec.style.display = '';
+    renderOfertas(conOferta);
+  }
 
-  // MÁS VENDIDOS: top 4
+  // MÁS VENDIDOS: top 4 por unidades vendidas; ocultar si no hay ventas
+  const masVendSec = document.getElementById('mas-vendidos');
   const masVendidos = [...productos]
-    .filter(p => ventaMap[p.nombre])
+    .filter(p => ventaMap[p.nombre] && +p.cantidad > 0)
     .sort((a,b) => (ventaMap[b.nombre]||0) - (ventaMap[a.nombre]||0))
     .slice(0, 4);
-  document.getElementById('countVend').textContent = masVendidos.length + ' productos';
-  document.getElementById('gridVend').innerHTML = masVendidos.length
-    ? `<div class="product-grid">${masVendidos.map(p => cardHTML(p, ventaMap, 'hot')).join('')}</div>`
-    : emptyHTML('Sin datos de ventas aún');
+  if(masVendidos.length === 0) {
+    masVendSec.style.display = 'none';
+  } else {
+    masVendSec.style.display = '';
+    document.getElementById('countVend').textContent = masVendidos.length + ' productos';
+    document.getElementById('gridVend').innerHTML =
+      `<div class="product-grid">${masVendidos.map(p => cardHTML(p, ventaMap, 'hot')).join('')}</div>`;
+  }
 
   // TODOS
   renderTodos();
@@ -737,11 +745,10 @@ function renderTodo_search() { renderTodos(); }
 
 function renderOfertas(ofertas) {
   const cont = document.getElementById('gridOfertas');
-  if(!ofertas.length) { cont.innerHTML='<p style="color:rgba(245,240,232,.4);font-size:13px;text-align:center;grid-column:1/-1">Sin ofertas disponibles</p>'; return; }
   cont.innerHTML = ofertas.map(p => {
-    const precio = +p.precio;
-    const precioOferta = Math.round(precio * (1 - DESCUENTO_OFERTA));
-    const pct = Math.round(DESCUENTO_OFERTA * 100);
+    const precio       = +p.precio;
+    const pct          = +p.oferta;
+    const precioOferta = Math.round(precio * (1 - pct / 100));
     const imgSrc = driveImgUrl(p.fotoUrl) || FOTO_DEFAULT;
     const inCart = carrito.find(c=>c.row===p.row);
     return `<div class="oferta-card">
@@ -760,7 +767,7 @@ function renderOfertas(ofertas) {
       <button class="oferta-add-btn" id="ofbtn-${p.row}"
         onclick="agregarOferta(${p.row},${precioOferta})"
         ${+p.cantidad===0?'disabled':''}>
-      ${inCart?`En cesta · ${inCart.qty} ✓`:'Agregar'}
+        ${inCart?`En cesta · ${inCart.qty} ✓`:'Agregar'}
       </button>
     </div>`;
   }).join('');
@@ -775,6 +782,7 @@ function cardHTML(p, ventaMap, badge) {
   let badgeHtml = '';
   if(badge==='new') badgeHtml = '<span class="product-badge badge-new">Nuevo</span>';
   else if(badge==='hot' && vendidos>5) badgeHtml = `<span class="product-badge badge-hot">🔥 ${vendidos} vendidos</span>`;
+  if(+p.oferta > 0) badgeHtml += `<span class="product-badge badge-sale" style="top:${badge?'34':'10'}px">-${+p.oferta}%</span>`;
   return `<div class="product-card">
     <div class="product-img" style="padding:0;overflow:hidden">
       <img src="${esc(imgSrc)}" alt="${esc(p.nombre)}"
