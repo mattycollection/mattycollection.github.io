@@ -31,7 +31,7 @@
   /* SIDEBAR */
   .sidebar { position:fixed; left:0; top:0; bottom:0; width:260px; background:var(--verde); display:flex; flex-direction:column; z-index:100; transition:transform .3s; }
   .sidebar-top { padding:32px 28px 24px; border-bottom:1px solid rgba(201,168,76,.2); }
-  .brand-monogram { width:52px; height:52px; border-radius:50%; border:1.5px solid var(--oro-dim); display:flex; align-items:center; justify-content:center; font-family:'Jost',sans-serif; font-size:20px; font-weight:600; color:var(--oro); margin-bottom:14px; letter-spacing:.05em;  }
+  .brand-monogram { width:52px; height:52px; border-radius:50%; border:1.5px solid var(--oro-dim); display:flex; align-items:center; justify-content:center; font-family:'Jost',sans-serif; font-size:20px; font-weight:600; color:var(--oro); margin-bottom:14px; letter-spacing:.05em; }
   .brand-name { font-family:'Jost',sans-serif; font-weight:600; font-size:18px; color:var(--crema); letter-spacing:.08em; text-transform:uppercase; line-height:1.2; }
   .brand-sub { font-size:11px; color:var(--oro-dim); letter-spacing:.12em; text-transform:uppercase; margin-top:3px; }
   .nav { padding:20px 16px; flex:1; }
@@ -99,7 +99,7 @@
   table { width:100%; border-collapse:collapse; }
   thead tr { background:#F8F5EE; }
   th { text-align:left; padding:13px 20px; font-size:10px; color:var(--muted); font-weight:600; letter-spacing:.1em; text-transform:uppercase; border-bottom:1px solid var(--crema-dark); }
-  td { padding:14px 20px; font-size:13px; border-bottom:1px solid var(--crema-dark); vertical-align:middle; color:var(--texto); }
+  td { padding:12px 20px; font-size:13px; border-bottom:1px solid var(--crema-dark); vertical-align:middle; color:var(--texto); }
   tr:last-child td { border-bottom:none; }
   tr:hover td { background:#FDFAF5; }
   .prod-name { font-weight:500; color:var(--verde); }
@@ -107,8 +107,20 @@
   .pill-green { background:rgba(45,107,71,.1); color:var(--verde-pale); border:1px solid rgba(45,107,71,.2); }
   .pill-amber { background:rgba(230,126,34,.1); color:#c0711d; border:1px solid rgba(230,126,34,.2); }
   .pill-red   { background:rgba(192,57,43,.1);  color:var(--rojo); border:1px solid rgba(192,57,43,.2); }
-  .pill-blue  { background:rgba(52,152,219,.1); color:#2471A3; border:1px solid rgba(52,152,219,.2); }
   .row-actions { display:flex; gap:7px; }
+
+  /* FOTO EN TABLA */
+  .prod-thumb {
+    width:44px; height:44px; border-radius:8px;
+    object-fit:cover; border:1px solid var(--crema-dark);
+    background:var(--crema); display:block;
+  }
+  .prod-thumb-placeholder {
+    width:44px; height:44px; border-radius:8px;
+    background:var(--crema); border:1px solid var(--crema-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0;
+  }
 
   /* PRECIO/COSTO en tabla */
   .precio-col { font-family:'Jost',sans-serif; font-size:15px; font-weight:600; }
@@ -123,7 +135,7 @@
   .chart-title { font-family:'Jost',sans-serif; font-size:14px; font-weight:700; color:var(--verde); margin-bottom:4px; }
   .chart-sub { font-size:11px; color:var(--muted); margin-bottom:18px; letter-spacing:.05em; text-transform:uppercase; }
 
-  /* ESTADÍSTICAS KPI */
+  /* KPI */
   .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }
   .kpi-card { background:var(--blanco); border:1px solid var(--crema-dark); border-radius:10px; padding:18px 16px; text-align:center; }
   .kpi-icon { font-size:22px; margin-bottom:6px; }
@@ -151,7 +163,7 @@
   /* MODAL */
   .modal-overlay { position:fixed; inset:0; background:rgba(26,61,43,.55); backdrop-filter:blur(6px); z-index:300; display:none; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
   .modal-overlay.open { display:flex; }
-  .modal { background:var(--blanco); border:1px solid var(--crema-dark); border-radius:14px; padding:32px; width:100%; max-width:500px; animation:slideUp .25s ease; box-shadow:0 20px 60px rgba(26,61,43,.25); margin:auto; }
+  .modal { background:var(--blanco); border:1px solid var(--crema-dark); border-radius:14px; padding:32px; width:100%; max-width:520px; animation:slideUp .25s ease; box-shadow:0 20px 60px rgba(26,61,43,.25); margin:auto; }
   @keyframes slideUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
   .modal-header { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
   .modal-icon { width:42px; height:42px; border-radius:9px; background:rgba(201,168,76,.12); display:flex; align-items:center; justify-content:center; font-size:20px; }
@@ -163,13 +175,50 @@
   .inp:focus { border-color:var(--oro-dim); background:var(--blanco); }
   .modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
 
+  /* FOTO UPLOAD */
+  .foto-upload-area {
+    border:2px dashed var(--crema-dark); border-radius:10px;
+    padding:20px; text-align:center; cursor:pointer;
+    transition:all .2s; position:relative; overflow:hidden;
+    background:var(--crema);
+  }
+  .foto-upload-area:hover, .foto-upload-area.drag { border-color:var(--oro-dim); background:rgba(201,168,76,.05); }
+  .foto-upload-area input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+  .foto-preview-wrap { position:relative; display:inline-block; }
+  .foto-preview {
+    width:100%; max-height:180px; object-fit:cover;
+    border-radius:8px; display:block;
+  }
+  .foto-remove {
+    position:absolute; top:6px; right:6px;
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(192,57,43,.9); color:#fff;
+    border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; transition:background .2s;
+  }
+  .foto-remove:hover { background:var(--rojo); }
+  .foto-placeholder { color:var(--muted); }
+  .foto-placeholder svg { width:32px; height:32px; margin-bottom:6px; opacity:.4; }
+  .foto-placeholder p { font-size:12px; }
+  .foto-placeholder span { font-size:10px; color:var(--muted); opacity:.7; }
+  .foto-uploading {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--oro-dim); justify-content:center; padding:8px;
+  }
+  .foto-uploading .mini-spin {
+    width:14px; height:14px; border:2px solid rgba(201,168,76,.3);
+    border-top-color:var(--oro); border-radius:50%;
+    animation:spin .7s linear infinite; flex-shrink:0;
+  }
+
   /* SUGERENCIA PRECIO */
   .precio-sugerido { background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.3); border-radius:8px; padding:12px 14px; margin-bottom:16px; display:none; }
   .precio-sugerido.show { display:block; }
   .ps-title { font-size:10px; color:var(--oro-dim); text-transform:uppercase; letter-spacing:.1em; font-weight:600; margin-bottom:6px; }
   .ps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .ps-opt { background:var(--blanco); border:1.5px solid var(--crema-dark); border-radius:7px; padding:8px; text-align:center; cursor:pointer; transition:all .2s; }
-  .ps-opt:hover, .ps-opt.sel { border-color:var(--oro); background:rgba(201,168,76,.08); }
+  .ps-opt:hover,.ps-opt.sel { border-color:var(--oro); background:rgba(201,168,76,.08); }
   .ps-opt-label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
   .ps-opt-val { font-family:'Jost',sans-serif; font-size:15px; font-weight:700; color:var(--verde); }
   .ps-opt-pct { font-size:10px; color:var(--oro-dim); font-weight:600; }
@@ -188,15 +237,35 @@
   .empty-state svg { width:44px; height:44px; margin-bottom:12px; opacity:.3; }
   .empty-state p { font-size:13px; letter-spacing:.03em; }
 
+  /* DETALLE PRODUCTO MODAL */
+  .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .detail-item { background:var(--crema); border-radius:8px; padding:12px 14px; }
+  .detail-item-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-weight:600; margin-bottom:4px; }
+  .detail-item-val { font-family:'Jost',sans-serif; font-size:17px; font-weight:700; color:var(--verde); }
+  .detail-foto { width:100%; max-height:220px; object-fit:cover; border-radius:10px; margin-bottom:18px; border:1px solid var(--crema-dark); }
+  .detail-ventas-list { max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+  .detail-venta-row { display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--crema); border-radius:7px; font-size:13px; }
+  .detail-venta-row .dv-qty { font-weight:700; font-size:14px; color:var(--verde); min-width:28px; }
+  .detail-venta-row .dv-date { color:var(--muted); font-size:11px; flex:1; }
+  .detail-venta-row .dv-monto { font-weight:600; color:var(--oro-dim); font-size:12px; }
+  .detail-venta-row .dv-nota { font-style:italic; color:var(--muted); font-size:11px; }
+  .btn-icon { width:32px; height:32px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; border:none; transition:all .2s; flex-shrink:0; }
+  .btn-icon-info { background:rgba(45,107,71,.1); color:var(--verde-pale); border:1px solid rgba(45,107,71,.25); }
+  .btn-icon-info:hover { background:var(--verde-pale); color:#fff; }
+  .btn-icon svg { width:14px; height:14px; }
+
+  /* IA */
+  .ai-loading { display:flex; align-items:center; gap:10px; padding:14px 18px; background:rgba(201,168,76,.07); border:1px solid rgba(201,168,76,.2); border-radius:9px; margin-bottom:14px; font-size:13px; color:var(--oro-dim); font-weight:500; }
+  .ai-loading .ai-spin { width:16px; height:16px; border:2px solid rgba(201,168,76,.3); border-top-color:var(--oro); border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+  .ai-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(201,168,76,.12); color:var(--oro-dim); border:1px solid rgba(201,168,76,.25); border-radius:5px; padding:2px 9px; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px; }
+  .ps-ai-nota { background:rgba(26,61,43,.04); border:1px solid rgba(26,61,43,.08); border-radius:8px; padding:12px 14px; margin-top:10px; font-size:12px; color:var(--texto); line-height:1.6; white-space:pre-wrap; }
+
   /* OVERLAY / MOBILE */
   .overlay-bg { display:none; position:fixed; inset:0; background:rgba(26,61,43,.5); z-index:90; }
   .mobile-actions { display:none; }
 
   /* RESPONSIVE */
-  @media (max-width:900px) {
-    .stats-grid { grid-template-columns:1fr 1fr; }
-    .kpi-grid   { grid-template-columns:repeat(3,1fr); }
-  }
+  @media (max-width:900px) { .stats-grid { grid-template-columns:1fr 1fr; } .kpi-grid { grid-template-columns:repeat(3,1fr); } }
   @media (max-width:768px) {
     .sidebar { transform:translateX(-100%); }
     .sidebar.open { transform:translateX(0); }
@@ -211,69 +280,12 @@
     .mobile-actions .btn { flex:1; justify-content:center; }
     .charts-grid { grid-template-columns:1fr; }
     .search-wrap input { width:130px; }
-    th, td { padding:11px 12px; font-size:12px; }
+    th, td { padding:10px 12px; font-size:12px; }
     .form-row { grid-template-columns:1fr; }
     .ps-grid { grid-template-columns:1fr 1fr 1fr; }
     .kpi-grid { grid-template-columns:1fr 1fr; }
   }
-  @media (max-width:500px) {
-    .stats-grid { grid-template-columns:1fr 1fr; }
-    .stat-value { font-size:28px; }
-    .kpi-grid { grid-template-columns:1fr 1fr; }
-  }
-  /* DETALLE PRODUCTO MODAL */
-  .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
-  .detail-item { background:var(--crema); border-radius:8px; padding:12px 14px; }
-  .detail-item-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-weight:600; margin-bottom:4px; }
-  .detail-item-val { font-family:'Jost',sans-serif; font-size:17px; font-weight:700; color:var(--verde); }
-  .detail-ventas-list { max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
-  .detail-venta-row { display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--crema); border-radius:7px; font-size:13px; }
-  .detail-venta-row .dv-qty { font-family:'Jost',sans-serif; font-weight:700; font-size:14px; color:var(--verde); min-width:28px; }
-  .detail-venta-row .dv-date { color:var(--muted); font-size:11px; flex:1; }
-  .detail-venta-row .dv-monto { font-weight:600; color:var(--oro-dim); font-size:12px; }
-  .detail-venta-row .dv-nota { font-style:italic; color:var(--muted); font-size:11px; }
-  .btn-icon { width:32px; height:32px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; border:none; transition:all .2s; flex-shrink:0; }
-  .btn-icon-info { background:rgba(45,107,71,.1); color:var(--verde-pale); border:1px solid rgba(45,107,71,.25); }
-  .btn-icon-info:hover { background:var(--verde-pale); color:#fff; }
-  .btn-icon svg { width:14px; height:14px; }
-  /* IA — estados y respuesta */
-  .ai-loading {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px 18px;
-    background: rgba(201,168,76,.07);
-    border: 1px solid rgba(201,168,76,.2);
-    border-radius: 9px; margin-bottom: 14px;
-    font-size: 13px; color: var(--oro-dim); font-weight: 500;
-  }
-  .ai-loading .ai-spin {
-    width: 16px; height: 16px; border: 2px solid rgba(201,168,76,.3);
-    border-top-color: var(--oro); border-radius: 50%;
-    animation: spin .7s linear infinite; flex-shrink: 0;
-  }
-  .ai-rec-card {
-    background: rgba(26,61,43,.04);
-    border: 1px solid rgba(26,61,43,.1);
-    border-left: 3px solid var(--oro);
-    border-radius: 10px; padding: 16px 18px;
-    font-size: 13px; color: var(--texto); line-height: 1.65;
-    white-space: pre-wrap;
-  }
-  .ai-rec-card strong { color: var(--verde); }
-  .ai-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: rgba(201,168,76,.12); color: var(--oro-dim);
-    border: 1px solid rgba(201,168,76,.25);
-    border-radius: 5px; padding: 2px 9px;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: .08em; text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .ps-ai-nota {
-    background: rgba(26,61,43,.04); border: 1px solid rgba(26,61,43,.08);
-    border-radius: 8px; padding: 12px 14px; margin-top: 10px;
-    font-size: 12px; color: var(--texto); line-height: 1.6;
-    white-space: pre-wrap;
-  }
+  @media (max-width:500px) { .stats-grid { grid-template-columns:1fr 1fr; } .stat-value { font-size:28px; } .kpi-grid { grid-template-columns:1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -302,10 +314,7 @@
       Historial
     </button>
   </div>
-  <div class="sidebar-footer">
-    <div class="online-dot"></div>
-    Sincronizado con Google Sheets
-  </div>
+  <div class="sidebar-footer"><div class="online-dot"></div>Sincronizado con Google Sheets</div>
 </nav>
 <div class="overlay-bg" id="overlayBg" onclick="closeSidebar()"></div>
 
@@ -347,7 +356,7 @@
       <button class="tab" onclick="setTab('historial')">Historial</button>
     </div>
 
-    <!-- ── PANEL PRODUCTOS ── -->
+    <!-- PRODUCTOS -->
     <div class="panel active" id="panel-productos">
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">Total Productos</div><div class="stat-value" id="s-total">—</div><div class="stat-sub">en catálogo</div></div>
@@ -367,55 +376,26 @@
       </div>
     </div>
 
-    <!-- ── PANEL ESTADÍSTICAS ── -->
+    <!-- ESTADÍSTICAS -->
     <div class="panel" id="panel-estadisticas">
-      <!-- KPIs financieros -->
       <div class="kpi-grid" id="kpiGrid"></div>
-
-      <!-- Recomendaciones -->
       <div class="chart-card" style="margin-bottom:20px">
         <div class="chart-title">💡 Recomendaciones</div>
         <div class="chart-sub">Sugerencias para mejorar rentabilidad</div>
         <div class="rec-list" id="recList" style="margin-top:4px;margin-bottom:0"></div>
       </div>
-
-      <!-- Gráficas row 1 -->
       <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Productos Más Vendidos</div>
-          <div class="chart-sub">Unidades vendidas por producto</div>
-          <canvas id="chartVentas" height="220"></canvas>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Ganancias por Producto</div>
-          <div class="chart-sub">Ganancia neta en DOP</div>
-          <canvas id="chartGanancias" height="220"></canvas>
-        </div>
+        <div class="chart-card"><div class="chart-title">Productos Más Vendidos</div><div class="chart-sub">Unidades vendidas por producto</div><canvas id="chartVentas" height="220"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Ganancias por Producto</div><div class="chart-sub">Ganancia neta en DOP</div><canvas id="chartGanancias" height="220"></canvas></div>
       </div>
-
-      <!-- Gráfica comportamiento tiempo -->
-      <div class="chart-card" style="margin-bottom:24px">
-        <div class="chart-title">Comportamiento de Ventas en el Tiempo</div>
-        <div class="chart-sub">Ingresos diarios en DOP</div>
-        <canvas id="chartLinea" height="110"></canvas>
-      </div>
-
-      <!-- Gráficas row 2 -->
+      <div class="chart-card" style="margin-bottom:24px"><div class="chart-title">Comportamiento de Ventas en el Tiempo</div><div class="chart-sub">Ingresos diarios en DOP</div><canvas id="chartLinea" height="110"></canvas></div>
       <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Distribución de Stock</div>
-          <div class="chart-sub">Unidades disponibles</div>
-          <canvas id="chartStock" height="220"></canvas>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Margen de Ganancia</div>
-          <div class="chart-sub">% margen por producto</div>
-          <canvas id="chartMargen" height="220"></canvas>
-        </div>
+        <div class="chart-card"><div class="chart-title">Distribución de Stock</div><div class="chart-sub">Unidades disponibles</div><canvas id="chartStock" height="220"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Margen de Ganancia</div><div class="chart-sub">% margen por producto</div><canvas id="chartMargen" height="220"></canvas></div>
       </div>
     </div>
 
-    <!-- ── PANEL HISTORIAL ── -->
+    <!-- HISTORIAL -->
     <div class="panel" id="panel-historial">
       <div id="histWrap"><div class="loading-state"><div class="spin"></div>Cargando historial…</div></div>
     </div>
@@ -430,6 +410,26 @@
       <h2 id="modalTitulo">Nuevo Producto</h2>
     </div>
     <input type="hidden" id="editRow">
+    <input type="hidden" id="fFotoUrl">
+
+    <!-- FOTO -->
+    <div class="form-group">
+      <label>Foto del Producto</label>
+      <div class="foto-upload-area" id="fotoArea"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="onFotoDrop(event)">
+        <input type="file" id="fotoInput" accept="image/*" onchange="onFotoSeleccionada(event)">
+        <div id="fotoContenido">
+          <div class="foto-placeholder">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <p>Haz clic o arrastra una foto aquí</p>
+            <span>JPG, PNG o WEBP · Máx 5 MB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="form-group">
       <label>Nombre del Producto</label>
       <input class="inp" id="fNombre" placeholder="Ej: Vestido Floral Talla M">
@@ -449,19 +449,16 @@
       <input class="inp" id="fPrecio" type="number" min="0" step="0.01" placeholder="0.00" oninput="actualizarMargenModal()">
     </div>
 
-    <!-- Sugerencias de precio -->
     <div class="precio-sugerido" id="precioSugerido">
       <div class="ps-title">💡 Precios sugeridos — elige uno o escribe el tuyo</div>
       <div class="ps-grid" id="psGrid"></div>
       <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.5;" id="psNota"></div>
     </div>
-
-    <!-- Indicador margen en vivo -->
     <div id="margenModal" style="font-size:12px;color:var(--muted);margin-bottom:8px;min-height:18px;"></div>
 
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="guardarProducto()">
+      <button class="btn btn-gold" id="btnGuardar" onclick="guardarProducto()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
         Guardar
       </button>
@@ -469,13 +466,14 @@
   </div>
 </div>
 
-<!-- MODAL DETALLE PRODUCTO -->
+<!-- MODAL DETALLE -->
 <div class="modal-overlay" id="modalDetalle">
   <div class="modal" style="max-width:560px">
     <div class="modal-header">
       <div class="modal-icon">📊</div>
       <h2 id="detalleTitulo">Detalle del Producto</h2>
     </div>
+    <div id="detalleFotoWrap"></div>
     <div class="detail-grid" id="detalleKpis"></div>
     <div style="margin-bottom:10px">
       <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:10px">Historial de Ventas</div>
@@ -483,7 +481,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeDetalle()">Cerrar</button>
-      <button class="btn btn-gold btn-sm" id="detalleEditBtn" onclick="editarDesdeDetalle()">
+      <button class="btn btn-gold btn-sm" id="detalleEditBtn">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Editar Producto
       </button>
@@ -495,183 +493,150 @@
 
 <script>
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyml_wBOufq5PccU6eOjMeN71bmkFzW3LE1EF7DoQH5ZLBpkFrLs91AKfGchJ7aWPgFkA/exec";
-// La API key de Gemini vive en Google Apps Script (Script Properties).
-// El HTML nunca la ve — solo llama al proxy con action=gemini&prompt=...
 
-// Para prompts largos usamos fetch POST directo al GAS
-// (GAS acepta POST con body JSON gracias al doPost que ya tenemos)
+// ─── CONFIGURACIÓN GITHUB (para guardar fotos en media/) ──
+// Rellena estos valores con los datos de tu repositorio.
+// Token: GitHub → Settings → Developer settings → Personal access tokens
+// Scope mínimo requerido: repo (o public_repo si el repo es público)
+const GH_OWNER  = "mattycollection";       // tu usuario/organización de GitHub
+const GH_REPO   = "mattycollection.github.io"; // nombre del repositorio
+const GH_BRANCH = "main";                  // rama principal
+const GH_TOKEN  = "";                      // ← pegar token aquí (nunca subir a GitHub)
+const FOTO_DEFAULT = "media/producto_sin_foto.png";
+
+// Sube un archivo a GitHub en la carpeta media/ usando la API REST
+async function subirFotoGitHub(base64, mimeType, nombreOriginal) {
+  if(!GH_TOKEN) throw new Error('GH_TOKEN no configurado');
+  // Generar nombre único: timestamp + extensión original
+  const ext = nombreOriginal.split('.').pop().toLowerCase() || 'jpg';
+  const fileName = `producto_${Date.now()}.${ext}`;
+  const path = `media/${fileName}`;
+  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`;
+
+  const res = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${GH_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message: `Foto producto: ${fileName}`,
+      content: base64,   // ya viene en base64 puro desde FileReader
+      branch: GH_BRANCH,
+    })
+  });
+  if(!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.message || `GitHub API error ${res.status}`);
+  }
+  // URL pública raw del archivo
+  return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${path}`;
+}
+
+// ─── GEMINI PROXY ─────────────────────────────────────────
 async function gemini(prompt) {
   const res = await fetch(URL_SCRIPT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'gemini', prompt }),
-    redirect: 'follow'
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'gemini',prompt}), redirect:'follow'
   });
   const txt = await res.text();
   let data;
   try { data = JSON.parse(txt); } catch { throw new Error('respuesta no JSON'); }
-  if (!data || !data.ok) throw new Error(data?.error || 'error gemini proxy');
+  if(!data||!data.ok) throw new Error(data?.error||'error gemini proxy');
   return data.texto;
 }
 
-// ─── IMPUESTOS RD ─────────────────────────────────────────
-// ITBIS = 18% (IVA dominicano sobre bienes/servicios)
-// Para ropa/calzado <RD$6,000 hay exención de ITBIS, pero el comerciante
-// igualmente paga ITBIS en sus insumos. Se muestran tres niveles de margen:
-const ITBIS = 0.18;
-const MARGEN_MIN  = 0.30;  // 30% mínimo recomendado (cubre costos operativos)
-const MARGEN_MED  = 0.50;  // 50% margen saludable
-const MARGEN_ALTO = 0.80;  // 80% margen premium
+const MARGEN_MIN=0.30, MARGEN_MED=0.50, MARGEN_ALTO=0.80;
+function precioConMargen(c,m){ return c/(1-m); }
+function margenSobreVenta(c,p){ if(!p||p<=0) return 0; return (p-c)/p; }
+function dop(n){ return 'RD$'+(+n||0).toLocaleString('es-DO',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Precio sugerido = Costo × (1 + margen) × (1 + ITBIS si aplica)
-// Para simplificar: precio = costo / (1 - margen) = precio que da ese margen sobre precio
-function precioConMargen(costo, margen) {
-  // margen sobre precio de venta (markup sobre precio, no sobre costo)
-  return costo / (1 - margen);
-}
-function margenSobreVenta(costo, precio) {
-  if (!precio || precio <= 0) return 0;
-  return (precio - costo) / precio;
-}
+let productos=[], ventas=[], historial=[], charts={};
 
-let productos = [], ventas = [], historial = [];
-let charts = {};
-
-// ─── NAVEGACIÓN ─────────────────────────────────────────
-const tabCfg = {
-  productos:   { title: 'Productos <em>· Inventario</em>', addBtn: true },
-  estadisticas:{ title: 'Estadísticas <em>· Finanzas</em>', addBtn: false },
-  historial:   { title: 'Historial <em>· Cambios</em>', addBtn: false },
+// ─── NAV ──────────────────────────────────────────────────
+const tabCfg={
+  productos:{title:'Productos <em>· Inventario</em>',addBtn:true},
+  estadisticas:{title:'Estadísticas <em>· Finanzas</em>',addBtn:false},
+  historial:{title:'Historial <em>· Cambios</em>',addBtn:false},
 };
-function setTab(t) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+function setTab(t){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   document.getElementById('panel-'+t).classList.add('active');
-  const idx = {productos:0,estadisticas:1,historial:2}[t];
+  const idx={productos:0,estadisticas:1,historial:2}[t];
   document.querySelectorAll('.tab')[idx].classList.add('active');
   document.querySelectorAll('.nav-item')[idx].classList.add('active');
-  document.getElementById('pageTitle').innerHTML = tabCfg[t].title;
-  const show = tabCfg[t].addBtn ? '' : 'none';
-  document.getElementById('btnAdd').style.display = show;
-  document.getElementById('mobileActions').style.display = tabCfg[t].addBtn ? '' : 'none';
-  closeSidebar();
-  loadAll(t);
+  document.getElementById('pageTitle').innerHTML=tabCfg[t].title;
+  document.getElementById('btnAdd').style.display=tabCfg[t].addBtn?'':'none';
+  document.getElementById('mobileActions').style.display=tabCfg[t].addBtn?'':'none';
+  closeSidebar(); loadAll(t);
 }
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('overlayBg').classList.add('open'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('open'); }
 
-function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlayBg').classList.add('open'); }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('open'); }
-
-// ─── API via JSONP (evita CORS con Google Apps Script) ───
-let _jsonpCount = 0;
-
-function api(params) {
-  return new Promise((resolve, reject) => {
-    const cbName = '_gasCallback' + (++_jsonpCount);
-    const qs = new URLSearchParams({ ...params, callback: cbName });
-    const script = document.createElement('script');
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error('timeout'));
-    }, 15000);
-
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-    }
-
-    window[cbName] = function(data) {
-      cleanup();
-      resolve(data);
-    };
-
-    script.onerror = function() {
-      cleanup();
-      reject(new Error('script-error'));
-    };
-
-    script.src = URL_SCRIPT + '?' + qs;
-    document.head.appendChild(script);
+// ─── JSONP API ─────────────────────────────────────────────
+let _jc=0;
+function api(params){
+  return new Promise((res,rej)=>{
+    const name='_gasCallback'+(++_jc);
+    const qs=new URLSearchParams({...params,callback:name});
+    const s=document.createElement('script');
+    const t=setTimeout(()=>{cleanup();rej(new Error('timeout'));},15000);
+    function cleanup(){ clearTimeout(t); delete window[name]; s.parentNode?.removeChild(s); }
+    window[name]=d=>{cleanup();res(d);};
+    s.onerror=()=>{cleanup();rej(new Error('error'));};
+    s.src=URL_SCRIPT+'?'+qs;
+    document.head.appendChild(s);
   });
 }
 
-async function loadAll(tabDestino) {
-  const tab = tabDestino || ['productos','estadisticas','historial'].find(
-    t => document.getElementById('panel-'+t).classList.contains('active')
-  ) || 'productos';
 
-  // Mostrar spinner mientras carga
-  document.getElementById('tablaWrap').innerHTML =
-    '<div class="loading-state"><div class="spin"></div>Cargando productos…</div>';
 
-  try {
-    const [pr, vr, hr] = await Promise.all([
-      api({action:'getProductos'}),
-      api({action:'getVentas'}),
-      api({action:'getHistorial'}),
-    ]);
-
-    // Validar que las respuestas traigan datos reales
-    if (!pr || !pr.ok || !Array.isArray(pr.data)) {
-      console.warn('getProductos respondió sin datos válidos:', pr);
-      return;
-    }
-
-    productos = pr.data || [];
-    ventas    = (vr && vr.ok && Array.isArray(vr.data)) ? vr.data : [];
-    historial = (hr && hr.ok && Array.isArray(hr.data)) ? hr.data : [];
-
-  } catch(e) {
-    console.warn('Error de red al cargar datos:', e);
-    return;
-  }
-
-  actualizarStats();
-  renderTabla();
-  if(tab === 'estadisticas') dibujarEstadisticas();
-  if(tab === 'historial')    renderHistorial();
+async function loadAll(tabDestino){
+  const tab=tabDestino||['productos','estadisticas','historial'].find(t=>document.getElementById('panel-'+t).classList.contains('active'))||'productos';
+  document.getElementById('tablaWrap').innerHTML='<div class="loading-state"><div class="spin"></div>Cargando productos…</div>';
+  try{
+    const [pr,vr,hr]=await Promise.all([api({action:'getProductos'}),api({action:'getVentas'}),api({action:'getHistorial'})]);
+    if(!pr||!pr.ok||!Array.isArray(pr.data)){ return; }
+    productos=pr.data||[];
+    ventas=(vr&&vr.ok&&Array.isArray(vr.data))?vr.data:[];
+    historial=(hr&&hr.ok&&Array.isArray(hr.data))?hr.data:[];
+  } catch(e){ console.warn('Error al cargar datos:',e); return; }
+  actualizarStats(); renderTabla();
+  if(tab==='estadisticas') dibujarEstadisticas();
+  if(tab==='historial') renderHistorial();
 }
 
-// ─── STATS RÁPIDAS ───────────────────────────────────────
-function actualizarStats() {
-  document.getElementById('s-total').textContent  = productos.length;
-  document.getElementById('s-units').textContent  = productos.reduce((a,b)=>a+(+b.cantidad||0),0);
-  document.getElementById('s-low').textContent    = productos.filter(p=>(+p.cantidad||0)<10).length;
-  document.getElementById('s-ventas').textContent = ventas.length;
+function actualizarStats(){
+  document.getElementById('s-total').textContent=productos.length;
+  document.getElementById('s-units').textContent=productos.reduce((a,b)=>a+(+b.cantidad||0),0);
+  document.getElementById('s-low').textContent=productos.filter(p=>(+p.cantidad||0)<10).length;
+  document.getElementById('s-ventas').textContent=ventas.length;
 }
 
-// ─── TABLA ───────────────────────────────────────────────
-function dop(n) { return 'RD$' + (+n||0).toLocaleString('es-DO',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+// ─── TABLA ────────────────────────────────────────────────
+function renderTabla(){
+  const q=(document.getElementById('buscar').value||'').toLowerCase();
+  const lista=productos.filter(p=>(p.nombre||'').toLowerCase().includes(q));
+  const w=document.getElementById('tablaWrap');
+  if(!productos.length){ w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><p>No hay productos aún — agrega el primero</p></div>`; return; }
+  if(!lista.length){ w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No se encontraron productos para "<strong>${esc(q)}</strong>"</p></div>`; return; }
 
-function renderTabla() {
-  const q = (document.getElementById('buscar').value||'').toLowerCase();
-  const lista = productos.filter(p=>(p.nombre||'').toLowerCase().includes(q));
-  const w = document.getElementById('tablaWrap');
-  if(!productos.length){
-    w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><p>No hay productos aún — agrega el primero</p></div>`;
-    return;
-  }
-  if(!lista.length){
-    w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No se encontraron productos para "<strong>${esc(q)}</strong>"</p></div>`;
-    return;
-  }
-  let h=`<table><thead><tr><th>#</th><th>Nombre</th><th>Stock</th><th>Costo</th><th>Precio</th><th>Margen</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
+  let h=`<table><thead><tr><th>Foto</th><th>#</th><th>Nombre</th><th>Stock</th><th>Costo</th><th>Precio</th><th>Margen</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
   lista.forEach((p,i)=>{
-    const qty  = +p.cantidad||0;
-    const cost = +p.costo||0;
-    const prec = +p.precio||0;
-    const mg   = prec ? margenSobreVenta(cost,prec) : null;
-    const mgPct = mg !== null ? Math.round(mg*100) : null;
-    const mgHtml = mgPct !== null
-      ? `<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`
-      : '<span style="color:var(--muted);font-size:11px">—</span>';
-    const pill = qty===0
-      ? `<span class="pill pill-red">Sin stock</span>`
-      : qty<10
-      ? `<span class="pill pill-amber">Stock bajo</span>`
-      : `<span class="pill pill-green">Disponible</span>`;
+    const qty=+p.cantidad||0;
+    const cost=+p.costo||0;
+    const prec=+p.precio||0;
+    const mg=prec?margenSobreVenta(cost,prec):null;
+    const mgPct=mg!==null?Math.round(mg*100):null;
+    const mgHtml=mgPct!==null?`<span class="margen-badge ${mgPct>=50?'margen-ok':mgPct>=30?'margen-warn':'margen-bad'}">${mgPct}%</span>`:'<span style="color:var(--muted);font-size:11px">—</span>';
+    const pill=qty===0?`<span class="pill pill-red">Sin stock</span>`:qty<10?`<span class="pill pill-amber">Stock bajo</span>`:`<span class="pill pill-green">Disponible</span>`;
+    const fotoSrc = p.fotoUrl || FOTO_DEFAULT;
+    const fotoHtml = `<img class="prod-thumb" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.src='${FOTO_DEFAULT}'">`;
     h+=`<tr>
+      <td>${fotoHtml}</td>
       <td style="color:var(--muted);font-size:12px">${i+1}</td>
       <td><span class="prod-name">${esc(p.nombre)}</span></td>
       <td><strong>${qty}</strong> <span style="color:var(--muted);font-size:11px">und</span></td>
@@ -680,7 +645,7 @@ function renderTabla() {
       <td>${mgHtml}</td>
       <td>${pill}</td>
       <td><div class="row-actions">
-        <button class="btn btn-icon-info" title="Ver detalle" onclick="verDetalle(${p.row})">Detalles</button>
+        <button class="btn btn-icon-info btn-sm" title="Ver detalle" onclick="verDetalle(${p.row})">Detalles</button>
         <button class="btn btn-edit-soft btn-sm" onclick="editarProducto(${p.row})">Editar</button>
         <button class="btn btn-danger-soft btn-sm" onclick="eliminarProducto(${p.row})">Eliminar</button>
       </div></td>
@@ -690,436 +655,69 @@ function renderTabla() {
   w.innerHTML=h;
 }
 
-// ─── ESTADÍSTICAS & CHARTS ───────────────────────────────
-const C = ['#C9A84C','#1A3D2B','#2D6B47','#A8893A','#7A9B87','#E8D5A3','#D4B96A','#245C3C'];
+// ─── FOTO UPLOAD ──────────────────────────────────────────
+let _fotoBase64=null, _fotoMime=null, _fotoNombre=null;
 
-function calcKPIs() {
-  // Construir mapa producto→{costo,precio}
-  const pm = {};
-  productos.forEach(p=>{ pm[p.nombre]={costo:+p.costo||0,precio:+p.precio||0}; });
-
-  let ingresoTotal=0, costoTotal=0, gananciaTotal=0;
-  const ventaMap={}, ingMap={}, ganMap={};
-
-  ventas.forEach(v=>{
-    const qty = +v.cantidad||1;
-    const info = pm[v.producto]||{costo:0,precio:0};
-    const ingreso  = info.precio * qty;
-    const costo    = info.costo  * qty;
-    const ganancia = ingreso - costo;
-    ingresoTotal  += ingreso;
-    costoTotal    += costo;
-    gananciaTotal += ganancia;
-    ventaMap[v.producto] = (ventaMap[v.producto]||0) + qty;
-    ingMap[v.producto]   = (ingMap[v.producto]||0)   + ingreso;
-    ganMap[v.producto]   = (ganMap[v.producto]||0)   + ganancia;
-  });
-
-  const rentabilidad = ingresoTotal ? (gananciaTotal/ingresoTotal)*100 : 0;
-  const valorInventario = productos.reduce((a,p)=>a+(+p.costo||0)*(+p.cantidad||0),0);
-
-  return {ingresoTotal,costoTotal,gananciaTotal,rentabilidad,valorInventario,ventaMap,ingMap,ganMap,pm};
+function onFotoSeleccionada(e){
+  const file=e.target.files[0];
+  if(file) procesarFoto(file);
 }
-
-async function dibujarEstadisticas() {
-  const {ingresoTotal,costoTotal,gananciaTotal,rentabilidad,valorInventario,ventaMap,ingMap,ganMap,pm} = calcKPIs();
-
-  // KPIs
-  const kpis = [
-    {icon:'💰',val:dop(ingresoTotal),label:'Ingresos Totales'},
-    {icon:'📦',val:dop(costoTotal),label:'Costo Mercancía'},
-    {icon:'✨',val:dop(gananciaTotal),label:'Ganancia Neta'},
-    {icon:'📈',val:rentabilidad.toFixed(1)+'%',label:'Rentabilidad'},
-    {icon:'🏪',val:dop(valorInventario),label:'Valor Inventario'},
-    {icon:'🛍️',val:ventas.length,label:'Transacciones'},
-  ];
-  document.getElementById('kpiGrid').innerHTML = kpis.map(k=>
-    `<div class="kpi-card"><div class="kpi-icon">${k.icon}</div><div class="kpi-val">${k.val}</div><div class="kpi-label">${k.label}</div></div>`
-  ).join('');
-
-  // Ordenar productos por ventas (más → menos)
-  const sortedByVentas = Object.entries(ventaMap).sort((a,b)=>b[1]-a[1]);
-  const vL = sortedByVentas.map(x=>x[0]);
-  const vD = sortedByVentas.map(x=>x[1]);
-  const gD = vL.map(n=>(ganMap[n]||0));
-
-  // Chart: más vendidos
-  if(charts.v) charts.v.destroy();
-  charts.v = new Chart(document.getElementById('chartVentas'),{
-    type:'bar',
-    data:{labels:vL,datasets:[{data:vD,backgroundColor:C,borderRadius:6,borderSkipped:false}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{display:false},ticks:{color:'#1A3D2B',font:{size:10,family:'Jost'}}}},responsive:true}
-  });
-
-  // Chart: ganancias por producto
-  const ganColor = gD.map(g=>g>=0?'#2D6B47':'#C0392B');
-  if(charts.g) charts.g.destroy();
-  charts.g = new Chart(document.getElementById('chartGanancias'),{
-    type:'bar',
-    data:{labels:vL,datasets:[{data:gD,backgroundColor:ganColor,borderRadius:6,borderSkipped:false}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'RD$'+ctx.raw.toLocaleString('es-DO')}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'},callback:v=>'RD$'+v.toLocaleString('es-DO')}},y:{grid:{display:false},ticks:{color:'#1A3D2B',font:{size:10,family:'Jost'}}}},responsive:true}
-  });
-
-  // Chart: ingresos en el tiempo
-  const byD={};
-  ventas.forEach(v=>{
-    const d=(v.fecha||'').slice(0,10);
-    const info=pm[v.producto]||{precio:0};
-    byD[d]=(byD[d]||0)+(info.precio*(+v.cantidad||1));
-  });
-  const dates=Object.keys(byD).sort();
-  if(charts.l) charts.l.destroy();
-  charts.l = new Chart(document.getElementById('chartLinea'),{
-    type:'line',
-    data:{labels:dates,datasets:[{label:'Ingresos DOP',data:dates.map(d=>byD[d]),borderColor:'#C9A84C',backgroundColor:'rgba(201,168,76,.07)',fill:true,tension:.4,pointBackgroundColor:'#C9A84C',pointRadius:4,pointHoverRadius:6}]},
-    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'RD$'+ctx.raw.toLocaleString('es-DO')}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'},callback:v=>'RD$'+v.toLocaleString('es-DO')}}},responsive:true}
-  });
-
-  // Chart: stock doughnut
-  if(charts.s) charts.s.destroy();
-  charts.s = new Chart(document.getElementById('chartStock'),{
-    type:'doughnut',
-    data:{labels:productos.map(p=>p.nombre),datasets:[{data:productos.map(p=>+p.cantidad||0),backgroundColor:C,borderWidth:0}]},
-    options:{plugins:{legend:{position:'bottom',labels:{color:'#7A9B87',padding:8,font:{size:10,family:'Jost'}}}},cutout:'62%',responsive:true}
-  });
-
-  // Chart: margen %
-  const prodConPrecio = productos.filter(p=>+p.costo&&+p.precio);
-  const mgLabels = prodConPrecio.map(p=>p.nombre);
-  const mgData   = prodConPrecio.map(p=>Math.round(margenSobreVenta(+p.costo,+p.precio)*100));
-  const mgColors = mgData.map(m=>m>=50?'#2D6B47':m>=30?'#C9A84C':'#C0392B');
-  if(charts.m) charts.m.destroy();
-  charts.m = new Chart(document.getElementById('chartMargen'),{
-    type:'bar',
-    data:{labels:mgLabels,datasets:[{data:mgData,backgroundColor:mgColors,borderRadius:6,borderSkipped:false}]},
-    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'%'}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'},callback:v=>v+'%'},max:100}},responsive:true}
-  });
-
-  // Recomendaciones con IA
-  generarRecomendaciones(ventaMap, ganMap, pm);
+function onFotoDrop(e){
+  e.preventDefault();
+  document.getElementById('fotoArea').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file) procesarFoto(file);
 }
-
-async function generarRecomendaciones(ventaMap, ganMap, pm) {
-  const cont = document.getElementById('recList');
-
-  // Mostrar spinner mientras IA analiza
-  cont.innerHTML = `<div class="ai-loading"><div class="ai-spin"></div>IA está analizando tu inventario y ventas…</div>`;
-
-  // Preparar resumen de datos para el prompt
-  const resumenProductos = productos.map(p => {
-    const vendidos = ventaMap[p.nombre] || 0;
-    const ganancia = ganMap[p.nombre]   || 0;
-    const mg = +p.costo && +p.precio
-      ? Math.round(margenSobreVenta(+p.costo, +p.precio) * 100)
-      : null;
-    return `- ${p.nombre}: stock ${p.cantidad}, costo RD$${p.costo||0}, precio RD$${p.precio||0}, margen ${mg !== null ? mg+'%' : 'sin configurar'}, vendidos ${vendidos} und, ganancia RD$${Math.round(ganancia)}`;
-  }).join('\n');
-
-  const totalVentas   = Object.values(ventaMap).reduce((a,b)=>a+b,0);
-  const totalIngreso  = productos.reduce((s,p) => s + (+p.precio||0)*(ventaMap[p.nombre]||0), 0);
-  const totalGanancia = Object.values(ganMap).reduce((a,b)=>a+b,0);
-
-  const prompt = `Eres un asesor experto en negocios de moda retail en República Dominicana.
-
-Analiza el siguiente inventario y ventas de "Matty Collection" y genera recomendaciones accionables en español.
-
-RESUMEN GENERAL:
-- Total ventas: ${totalVentas} unidades
-- Ingresos totales: RD$${Math.round(totalIngreso).toLocaleString('es-DO')}
-- Ganancia total: RD$${Math.round(totalGanancia).toLocaleString('es-DO')}
-- Rentabilidad: ${totalIngreso ? Math.round((totalGanancia/totalIngreso)*100) : 0}%
-
-PRODUCTOS:
-${resumenProductos}
-
-CONTEXTO: ITBIS RD es 18%. Margen saludable mínimo 30% sobre precio de venta.
-
-Genera de 4 a 7 recomendaciones concretas y específicas. Cada recomendación debe tener este formato exacto (sin markdown, sin asteriscos):
-
-TITULO: [título corto máx 8 palabras]
-TIPO: [precio | stock | alerta | oportunidad]
-DETALLE: [explicación específica de 1-2 oraciones con números concretos]
----
-
-Solo el bloque anterior, separado por "---", sin texto adicional antes ni después.`;
-
-  try {
-    const texto = await gemini(prompt);
-    const bloques = texto.trim().split('---').map(b => b.trim()).filter(Boolean);
-
-    if(!bloques.length) throw new Error('sin bloques');
-
-    const iconos = { precio:'💡', stock:'📦', alerta:'⚠️', oportunidad:'🚀' };
-    const bgs    = { precio:'rgba(201,168,76,.1)', stock:'rgba(45,107,71,.1)', alerta:'rgba(192,57,43,.1)', oportunidad:'rgba(52,152,219,.1)' };
-    const tags   = { precio:'tag-precio', stock:'tag-stock', alerta:'tag-alerta', oportunidad:'tag-precio' };
-    const tagTxts = { precio:'Revisar precio', stock:'Gestionar stock', alerta:'Atención requerida', oportunidad:'Aprovechar' };
-
-    const items = bloques.map(bloque => {
-      const titulo  = (bloque.match(/TITULO:\s*(.+)/)?.[1] || '').trim();
-      const tipo    = (bloque.match(/TIPO:\s*(.+)/)?.[1] || 'precio').trim().toLowerCase();
-      const detalle = (bloque.match(/DETALLE:\s*([\s\S]+)/)?.[1] || '').trim();
-      const key     = Object.keys(iconos).find(k => tipo.includes(k)) || 'precio';
-      return { titulo, detalle, key };
-    }).filter(i => i.titulo);
-
-    if(!items.length) throw new Error('sin items parseados');
-
-    cont.innerHTML = `
-      <div class="ai-badge" style="margin-bottom:14px">✨ Análisis IA</div>
-      ${items.map(r => `
-        <div class="rec-item">
-          <div class="rec-icon" style="background:${bgs[r.key]}">${iconos[r.key]}</div>
-          <div class="rec-body">
-            <strong>${esc(r.titulo)}</strong>
-            <p>${esc(r.detalle)}</p>
-            <span class="rec-tag ${tags[r.key]}">${tagTxts[r.key]}</span>
-          </div>
-        </div>`).join('')}`;
-
-  } catch(e) {
-    console.warn('IA recomendaciones falló, usando lógica local:', e);
-    generarRecomendacionesLocal(ventaMap, ganMap, pm, cont);
-  }
-}
-
-// Fallback local si IA no responde
-function generarRecomendacionesLocal(ventaMap, ganMap, pm, cont) {
-  const recs = [];
-  const totalVentas = Object.values(ventaMap).reduce((a,b)=>a+b,0) || 1;
-  const promedioVentas = totalVentas / (Object.keys(ventaMap).length || 1);
-
-  productos.forEach(p => {
-    const nombre   = p.nombre;
-    const costo    = +p.costo||0;
-    const precio   = +p.precio||0;
-    const qty      = +p.cantidad||0;
-    const vendidos = ventaMap[nombre]||0;
-    const mg       = precio && costo ? margenSobreVenta(costo,precio) : null;
-
-    if(!precio || !costo) {
-      recs.push({icon:'⚙️',bg:'rgba(201,168,76,.1)',titulo:`${nombre} — sin precio/costo`,desc:`Sin esta información no se puede calcular rentabilidad.`,tag:'tag-precio',tagTxt:'Configurar precio'});
-      return;
-    }
-    if(mg < 0.25) {
-      const precSug = Math.round(precioConMargen(costo, MARGEN_MIN));
-      recs.push({icon:'📉',bg:'rgba(192,57,43,.1)',titulo:`${nombre} — margen crítico (${Math.round(mg*100)}%)`,desc:`Precio mínimo sugerido: ${dop(precSug)}.`,tag:'tag-alerta',tagTxt:'Aumentar precio'});
-    }
-    if(vendidos > promedioVentas && mg !== null && mg < 0.40) {
-      const precSug = Math.round(precioConMargen(costo, MARGEN_MED));
-      recs.push({icon:'🔥',bg:'rgba(230,126,34,.1)',titulo:`${nombre} — alta demanda, bajo margen`,desc:`${vendidos} und vendidas. Precio sugerido: ${dop(precSug)}.`,tag:'tag-precio',tagTxt:'Optimizar precio'});
-    }
-    if(qty < 5 && vendidos > 0) {
-      recs.push({icon:'⚠️',bg:'rgba(192,57,43,.1)',titulo:`${nombre} — stock crítico`,desc:`Solo ${qty} unidades. Reabastecer pronto.`,tag:'tag-stock',tagTxt:'Reabastecer'});
-    }
-    if(qty > 20 && vendidos === 0) {
-      recs.push({icon:'📦',bg:'rgba(201,168,76,.1)',titulo:`${nombre} — sin ventas`,desc:`${qty} unidades sin movimiento.`,tag:'tag-stock',tagTxt:'Promover'});
-    }
-  });
-
-  if(!recs.length) {
-    cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">✅ Todo luce bien</div>`;
-    return;
-  }
-  cont.innerHTML = recs.map(r=>`
-    <div class="rec-item">
-      <div class="rec-icon" style="background:${r.bg}">${r.icon}</div>
-      <div class="rec-body">
-        <strong>${esc(r.titulo)}</strong>
-        <p>${esc(r.desc)}</p>
-        <span class="rec-tag ${r.tag}">${r.tagTxt}</span>
-      </div>
-    </div>`).join('');
-}
-
-// ─── HISTORIAL ───────────────────────────────────────────
-function formatFecha(str) {
-  if(!str) return '—';
-  if(/^\d{4}-\d{2}-\d{2}T/.test(str)) {
-    const local = str.includes('Z') ? new Date(str) : new Date(str.replace('T',' '));
-    return local.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  }
-  return str;
-}
-
-function renderHistorial() {
-  const icons={create:'🌿',edit:'✏️',delete:'🗑️',sale:'🛍️'};
-  const bgmap={create:'rgba(45,107,71,.1)',edit:'rgba(201,168,76,.1)',delete:'rgba(192,57,43,.1)',sale:'rgba(26,61,43,.1)'};
-  const w = document.getElementById('histWrap');
-  if(!historial.length){
-    w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p>Sin registros aún</p></div>`;
-    return;
-  }
-  let h='<div class="hist-list">';
-  [...historial].reverse().forEach(i=>{
-    const t=i.tipo||'edit';
-    let detalle=esc(i.detalle||'');
-    let notaHtml='';
-    const nm=(i.detalle||'').match(/—\s*"(.+)"$/);
-    if(nm){ detalle=esc((i.detalle||'').replace(/\s*—\s*".+"$/,'')); notaHtml=`<span style="display:inline-block;margin-top:4px;background:rgba(201,168,76,.12);color:var(--oro-dim);border-radius:5px;padding:2px 8px;font-size:11px;font-style:italic;">📝 ${esc(nm[1])}</span>`; }
-    h+=`<div class="hist-item"><div class="hist-icon" style="background:${bgmap[t]||bgmap.edit}">${icons[t]||'📝'}</div><div class="hist-body"><strong>${esc(i.accion||'')}</strong><small>${detalle} &nbsp;·&nbsp; ${formatFecha(i.fecha)}</small>${notaHtml}</div></div>`;
-  });
-  h+='</div>';
-  w.innerHTML=h;
-}
-
-// ─── MODAL: SUGERENCIAS DE PRECIO CON IA ─────────────────
-let _sugerenciasTimer = null;
-
-function calcularSugerencias() {
-  const costo = +document.getElementById('fCosto').value||0;
-  const box = document.getElementById('precioSugerido');
-  if(!costo){ box.classList.remove('show'); return; }
-  box.classList.add('show');
-
-  // Mostrar precios base inmediatamente mientras carga la IA
-  const grid = document.getElementById('psGrid');
-  const nota = document.getElementById('psNota');
-  const opciones = [
-    { label:'Mínimo', pct:MARGEN_MIN, desc:'30%' },
-    { label:'Óptimo', pct:MARGEN_MED, desc:'50%' },
-    { label:'Premium', pct:MARGEN_ALTO, desc:'80%' },
-  ];
-  grid.innerHTML = opciones.map((o,i)=>{
-    const val = Math.round(precioConMargen(costo, o.pct));
-    return `<div class="ps-opt" onclick="elegirPrecio(${val})" id="psOpt${i}">
-      <div class="ps-opt-label">${o.label}</div>
-      <div class="ps-opt-val">${dop(val)}</div>
-      <div class="ps-opt-pct">${o.desc} margen</div>
+function procesarFoto(file){
+  if(file.size>5*1024*1024){ toast('La foto supera 5 MB','warn'); return; }
+  if(!file.type.startsWith('image/')){ toast('Solo se permiten imágenes','warn'); return; }
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const dataUrl=ev.target.result;
+    _fotoBase64=dataUrl.split(',')[1];
+    _fotoMime=file.type;
+    _fotoNombre=file.name;
+    const cont=document.getElementById('fotoContenido');
+    cont.innerHTML=`<div class="foto-preview-wrap">
+      <img class="foto-preview" src="${dataUrl}" alt="preview">
+      <button class="foto-remove" onclick="quitarFoto(event)" title="Quitar foto">✕</button>
     </div>`;
-  }).join('');
-
-  nota.innerHTML = `<div class="ai-loading"><div class="ai-spin"></div>IA está analizando el precio ideal…</div>`;
-  actualizarMargenModal();
-
-  // Debounce — esperar 800ms antes de llamar la IA
-  clearTimeout(_sugerenciasTimer);
-  _sugerenciasTimer = setTimeout(() => pedirSugerenciaIA(costo), 800);
+  };
+  reader.readAsDataURL(file);
+}
+function quitarFoto(e){
+  e.stopPropagation();
+  _fotoBase64=null; _fotoMime=null; _fotoNombre=null;
+  document.getElementById('fotoInput').value='';
+  document.getElementById('fotoContenido').innerHTML=`<div class="foto-placeholder">
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <p>Haz clic o arrastra una foto aquí</p><span>JPG, PNG o WEBP · Máx 5 MB</span>
+  </div>`;
+  document.getElementById('fFotoUrl').value='';
+}
+function resetFoto(){
+  _fotoBase64=null; _fotoMime=null; _fotoNombre=null;
+  document.getElementById('fotoInput').value='';
+  document.getElementById('fFotoUrl').value='';
+  document.getElementById('fotoContenido').innerHTML=`<div class="foto-placeholder">
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <p>Haz clic o arrastra una foto aquí</p><span>JPG, PNG o WEBP · Máx 5 MB</span>
+  </div>`;
+}
+function cargarFotoExistente(url){
+  if(!url) return;
+  document.getElementById('fFotoUrl').value=url;
+  const cont=document.getElementById('fotoContenido');
+  cont.innerHTML=`<div class="foto-preview-wrap">
+    <img class="foto-preview" src="${esc(url)}" alt="foto actual" onerror="this.src=''">
+    <button class="foto-remove" onclick="quitarFoto(event)" title="Quitar foto">✕</button>
+  </div>`;
 }
 
-async function pedirSugerenciaIA(costo) {
-  const nombre  = document.getElementById('fNombre').value.trim() || 'producto de moda/ropa';
-  const nota    = document.getElementById('psNota');
-  const ventasProducto = ventas.filter(v => v.producto === nombre).length;
-  const stockActual    = +document.getElementById('fCantidad').value || 0;
-
-  // Contexto de ventas similares para enriquecer el análisis
-  const contextoVentas = productos.length
-    ? `Otros productos en el inventario: ${productos.slice(0,5).map(p=>`${p.nombre} (costo RD$${p.costo||0}, precio RD$${p.precio||0})`).join(', ')}.`
-    : '';
-
-  const prompt = `Eres un asesor de negocios experto en retail de moda en República Dominicana.
-
-Producto: "${nombre}"
-Costo unitario: RD$${costo}
-Stock inicial: ${stockActual} unidades
-Ventas registradas de este producto: ${ventasProducto}
-${contextoVentas}
-
-Contexto fiscal RD: ITBIS 18% aplica sobre bienes y servicios. Ropa y calzado por debajo de RD$6,000 puede estar exenta, pero el comerciante paga ITBIS en sus insumos.
-
-Analiza y responde en español, de forma concisa (máximo 5 líneas), con:
-1. El precio de venta ideal para este producto en RD considerando el mercado local, el tipo de producto y los márgenes saludables.
-2. Una razón breve del por qué ese precio.
-3. Una advertencia si el costo es muy alto o el margen sería insuficiente.
-
-Responde en texto plano sin markdown, sin asteriscos, sin listas con guiones.`;
-
-  try {
-    const respuesta = await gemini(prompt);
-    nota.innerHTML = `
-      <div class="ai-badge">✨ Análisis IA</div>
-      <div class="ps-ai-nota">${esc(respuesta.trim())}</div>`;
-  } catch(e) {
-    const precMin = Math.round(precioConMargen(costo, MARGEN_MIN));
-    nota.innerHTML = `ℹ️ En RD el ITBIS es 18%. Precio mínimo recomendado: <strong>${dop(precMin)}</strong> (30% margen sobre venta).`;
-  }
-}
-
-function elegirPrecio(val) {
-  document.getElementById('fPrecio').value = val;
-  document.querySelectorAll('.ps-opt').forEach(el=>el.classList.remove('sel'));
-  actualizarMargenModal();
-}
-
-function actualizarMargenModal() {
-  const costo = +document.getElementById('fCosto').value||0;
-  const precio = +document.getElementById('fPrecio').value||0;
-  const el = document.getElementById('margenModal');
-  if(!costo||!precio){ el.textContent=''; return; }
-  const mg = margenSobreVenta(costo,precio);
-  const mgPct = Math.round(mg*100);
-  const ganancia = precio-costo;
-  const cls = mgPct>=50?'#2D6B47':mgPct>=30?'#c0711d':'#C0392B';
-  el.innerHTML = `Ganancia por unidad: <strong style="color:${cls}">${dop(ganancia)}</strong> &nbsp;·&nbsp; Margen: <strong style="color:${cls}">${mgPct}%</strong>${mgPct<30?' ⚠️ Por debajo del mínimo recomendado':''}`;
-}
-
-// ─── DETALLE PRODUCTO ────────────────────────────────────
-let detalleRowActual = null;
-
-function verDetalle(row) {
-  const p = productos.find(x=>x.row===row);
-  if(!p) return;
-  detalleRowActual = row;
-
-  document.getElementById('detalleTitulo').textContent = p.nombre;
-  document.getElementById('detalleEditBtn').onclick = ()=>{ closeDetalle(); editarProducto(row); };
-
-  const costo  = +p.costo||0;
-  const precio = +p.precio||0;
-  const qty    = +p.cantidad||0;
-  const mg     = costo&&precio ? Math.round(margenSobreVenta(costo,precio)*100) : null;
-  const ganUnd = precio - costo;
-
-  // Ventas de este producto
-  const misVentas = ventas.filter(v=>v.producto===p.nombre);
-  const totalVend = misVentas.reduce((a,v)=>a+(+v.cantidad||1),0);
-  const ingresoTot= misVentas.reduce((a,v)=>a+(precio*(+v.cantidad||1)),0);
-  const ganTotal  = misVentas.reduce((a,v)=>a+(ganUnd*(+v.cantidad||1)),0);
-
-  document.getElementById('detalleKpis').innerHTML = [
-    {label:'Stock Actual',   val: qty+' und'},
-    {label:'Costo Unitario', val: costo ? dop(costo) : '—'},
-    {label:'Precio de Venta',val: precio ? dop(precio) : '—'},
-    {label:'Ganancia / Und', val: costo&&precio ? dop(ganUnd) : '—'},
-    {label:'Margen',         val: mg!==null ? mg+'%' : '—'},
-    {label:'Unidades Vendidas', val: totalVend},
-    {label:'Ingresos Totales',  val: dop(ingresoTot)},
-    {label:'Ganancia Total',    val: dop(ganTotal)},
-  ].map(k=>`<div class="detail-item"><div class="detail-item-label">${k.label}</div><div class="detail-item-val">${k.val}</div></div>`).join('');
-
-  const dvWrap = document.getElementById('detalleVentas');
-  if(!misVentas.length){
-    dvWrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Sin ventas registradas</div>';
-  } else {
-    dvWrap.innerHTML = [...misVentas].reverse().map(v=>{
-      const monto = precio*(+v.cantidad||1);
-      const d = parseFechaAdmin(v.fecha);
-      const fechaStr = d ? d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : (v.fecha||'—');
-      return `<div class="detail-venta-row">
-        <span class="dv-qty">×${v.cantidad||1}</span>
-        <span class="dv-date">${fechaStr}</span>
-        ${precio?`<span class="dv-monto">${dop(monto)}</span>`:''}
-        ${v.nota?`<span class="dv-nota">📝 ${esc(v.nota)}</span>`:''}
-      </div>`;
-    }).join('');
-  }
-
-  document.getElementById('modalDetalle').classList.add('open');
-}
-
-function closeDetalle() { document.getElementById('modalDetalle').classList.remove('open'); }
-
-function parseFechaAdmin(str) {
-  if(!str) return null;
-  if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(str) && !str.endsWith('Z'))
-    return new Date(str.replace('T',' '));
-  return new Date(str);
-}
-
-
-function openModal(row) {
-  const box = document.getElementById('precioSugerido');
-  box.classList.remove('show');
+// ─── MODAL ────────────────────────────────────────────────
+function openModal(row){
+  resetFoto();
+  document.getElementById('precioSugerido').classList.remove('show');
   document.getElementById('margenModal').textContent='';
   if(row){
     const p=productos.find(x=>x.row===row);
@@ -1129,6 +727,7 @@ function openModal(row) {
     document.getElementById('fCantidad').value=p.cantidad;
     document.getElementById('fCosto').value=p.costo||'';
     document.getElementById('fPrecio').value=p.precio||'';
+    if(p.fotoUrl) cargarFotoExistente(p.fotoUrl);
     if(p.costo) calcularSugerencias();
     actualizarMargenModal();
   } else {
@@ -1145,57 +744,253 @@ function closeModal(){ document.getElementById('modal').classList.remove('open')
 function editarProducto(row){ openModal(row); }
 
 async function guardarProducto(){
-  const nombre   = document.getElementById('fNombre').value.trim();
-  const cantidad = document.getElementById('fCantidad').value;
-  const costo    = document.getElementById('fCosto').value;
-  const precio   = document.getElementById('fPrecio').value;
+  const nombre=document.getElementById('fNombre').value.trim();
+  const cantidad=document.getElementById('fCantidad').value;
+  const costo=document.getElementById('fCosto').value;
+  const precio=document.getElementById('fPrecio').value;
   if(!nombre){ toast('Ingresa el nombre del producto','warn'); return; }
-  const row = document.getElementById('editRow').value;
-  let guardado = false;
-  try {
-    const res = await api({action:row?'editProducto':'addProducto', nombre, cantidad, costo, precio, row});
-    if(res && res.ok) {
-      toast(row?'Producto actualizado ✓':'Producto creado ✓','ok');
-      guardado = true;
+  const row=document.getElementById('editRow').value;
+  const btn=document.getElementById('btnGuardar');
+  btn.disabled=true;
+
+  // ── Subir foto a GitHub media/ si hay una nueva seleccionada
+  let fotoUrl=document.getElementById('fFotoUrl').value||'';
+  if(_fotoBase64){
+    btn.innerHTML='<div style="display:inline-flex;gap:6px;align-items:center"><div class="mini-spin"></div>Subiendo foto…</div>';
+    try{
+      fotoUrl = await subirFotoGitHub(_fotoBase64, _fotoMime, _fotoNombre);
+    } catch(e){
+      console.warn('Error al subir foto a GitHub:',e);
+      toast('No se pudo subir la foto: '+e.message,'warn');
+      // Continuar guardando sin foto nueva
     }
-  } catch(e) {
-    console.warn('Error al guardar producto:', e);
   }
-  if(guardado){
-    closeModal(); loadAll();
-    return;
-  }
-  // Fallback demo (sin conexión o script no disponible)
-  if(row){
-    const p=productos.find(x=>x.row===+row);
-    if(p){p.nombre=nombre;p.cantidad=+cantidad;p.costo=+costo;p.precio=+precio;}
-  } else {
-    productos.push({row:Date.now(),nombre,cantidad:+cantidad,costo:+costo,precio:+precio,fecha:new Date().toISOString().slice(0,10)});
-  }
-  const detalleLog = `${nombre}${costo?' · Costo: '+dop(+costo):''}${precio?' · Precio: '+dop(+precio):''}`;
-  historial.push({accion:row?'Producto editado':'Producto creado',detalle:detalleLog,fecha:new Date().toLocaleString(),tipo:row?'edit':'create'});
-  toast(row?'Actualizado (modo offline)':'Creado (modo offline)','warn');
+
+  btn.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> Guardar';
+  btn.disabled=false;
+
+  let guardado=false;
+  try{
+    const res=await api({action:row?'editProducto':'addProducto',nombre,cantidad,costo,precio,fotoUrl,row});
+    if(res&&res.ok){ toast(row?'Producto actualizado ✓':'Producto creado ✓','ok'); guardado=true; }
+  } catch(e){ console.warn('Error al guardar:',e); }
+  if(guardado){ closeModal(); loadAll(); return; }
+  // Fallback local
+  if(row){ const p=productos.find(x=>x.row===+row); if(p){p.nombre=nombre;p.cantidad=+cantidad;p.costo=+costo;p.precio=+precio;p.fotoUrl=fotoUrl;} }
+  else { productos.push({row:Date.now(),nombre,cantidad:+cantidad,costo:+costo,precio:+precio,fotoUrl,fecha:new Date().toISOString().slice(0,10)}); }
+  toast(row?'Actualizado (offline)':'Creado (offline)','warn');
   closeModal(); actualizarStats(); renderTabla();
 }
 
 async function eliminarProducto(row){
   const p=productos.find(x=>x.row===row);
   if(!confirm(`¿Eliminar "${p?.nombre}"?`)) return;
-  let eliminado = false;
-  try {
-    const res = await api({action:'deleteProducto',row});
-    if(res && res.ok) eliminado = true;
-  } catch(e) { console.warn('Error al eliminar:', e); }
-  if(eliminado){
-    toast('Producto eliminado','warn'); loadAll();
-  } else {
-    productos=productos.filter(x=>x.row!==row);
-    historial.push({accion:'Producto eliminado',detalle:p?.nombre||'',fecha:new Date().toLocaleString(),tipo:'delete'});
-    toast('Eliminado (modo offline)','warn'); actualizarStats(); renderTabla();
-  }
+  let eliminado=false;
+  try{ const res=await api({action:'deleteProducto',row}); if(res&&res.ok) eliminado=true; } catch(e){}
+  if(eliminado){ toast('Producto eliminado','warn'); loadAll(); }
+  else{ productos=productos.filter(x=>x.row!==row); toast('Eliminado (offline)','warn'); actualizarStats(); renderTabla(); }
 }
 
-// ─── UTILS ───────────────────────────────────────────────
+// ─── DETALLE ──────────────────────────────────────────────
+function verDetalle(row){
+  const p=productos.find(x=>x.row===row);
+  if(!p) return;
+  document.getElementById('detalleTitulo').textContent=p.nombre;
+  document.getElementById('detalleEditBtn').onclick=()=>{ closeDetalle(); editarProducto(row); };
+
+  // Foto en detalle
+  const fWrap=document.getElementById('detalleFotoWrap');
+  const fotoSrc = p.fotoUrl || FOTO_DEFAULT;
+  fWrap.innerHTML=`<img class="detail-foto" src="${esc(fotoSrc)}" alt="${esc(p.nombre)}" onerror="this.src='${FOTO_DEFAULT}'">`;
+
+  const costo=+p.costo||0, precio=+p.precio||0, qty=+p.cantidad||0;
+  const mg=costo&&precio?Math.round(margenSobreVenta(costo,precio)*100):null;
+  const ganUnd=precio-costo;
+  const misVentas=ventas.filter(v=>v.producto===p.nombre);
+  const totalVend=misVentas.reduce((a,v)=>a+(+v.cantidad||1),0);
+  const ingresoTot=misVentas.reduce((a,v)=>a+(precio*(+v.cantidad||1)),0);
+  const ganTotal=misVentas.reduce((a,v)=>a+(ganUnd*(+v.cantidad||1)),0);
+
+  document.getElementById('detalleKpis').innerHTML=[
+    {label:'Stock Actual',val:qty+' und'},
+    {label:'Costo Unitario',val:costo?dop(costo):'—'},
+    {label:'Precio de Venta',val:precio?dop(precio):'—'},
+    {label:'Ganancia / Und',val:costo&&precio?dop(ganUnd):'—'},
+    {label:'Margen',val:mg!==null?mg+'%':'—'},
+    {label:'Unidades Vendidas',val:totalVend},
+    {label:'Ingresos Totales',val:dop(ingresoTot)},
+    {label:'Ganancia Total',val:dop(ganTotal)},
+  ].map(k=>`<div class="detail-item"><div class="detail-item-label">${k.label}</div><div class="detail-item-val">${k.val}</div></div>`).join('');
+
+  const dvWrap=document.getElementById('detalleVentas');
+  if(!misVentas.length){ dvWrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Sin ventas registradas</div>'; }
+  else {
+    dvWrap.innerHTML=[...misVentas].reverse().map(v=>{
+      const monto=precio*(+v.cantidad||1);
+      const d=parseFechaAdmin(v.fecha);
+      const fs=d?d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):(v.fecha||'—');
+      return `<div class="detail-venta-row">
+        <span class="dv-qty">×${v.cantidad||1}</span>
+        <span class="dv-date">${fs}</span>
+        ${precio?`<span class="dv-monto">${dop(monto)}</span>`:''}
+        ${v.nota?`<span class="dv-nota">📝 ${esc(v.nota)}</span>`:''}
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('modalDetalle').classList.add('open');
+}
+function closeDetalle(){ document.getElementById('modalDetalle').classList.remove('open'); }
+function parseFechaAdmin(str){ if(!str) return null; if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(str)&&!str.endsWith('Z')) return new Date(str.replace('T',' ')); return new Date(str); }
+
+// ─── ESTADÍSTICAS ─────────────────────────────────────────
+const C=['#C9A84C','#1A3D2B','#2D6B47','#A8893A','#7A9B87','#E8D5A3','#D4B96A','#245C3C'];
+function calcKPIs(){
+  const pm={};
+  productos.forEach(p=>{ pm[p.nombre]={costo:+p.costo||0,precio:+p.precio||0}; });
+  let ingresoTotal=0,costoTotal=0,gananciaTotal=0;
+  const ventaMap={},ingMap={},ganMap={};
+  ventas.forEach(v=>{
+    const qty=+v.cantidad||1, info=pm[v.producto]||{costo:0,precio:0};
+    const ingreso=info.precio*qty, costo=info.costo*qty, ganancia=ingreso-costo;
+    ingresoTotal+=ingreso; costoTotal+=costo; gananciaTotal+=ganancia;
+    ventaMap[v.producto]=(ventaMap[v.producto]||0)+qty;
+    ingMap[v.producto]=(ingMap[v.producto]||0)+ingreso;
+    ganMap[v.producto]=(ganMap[v.producto]||0)+ganancia;
+  });
+  const rentabilidad=ingresoTotal?(gananciaTotal/ingresoTotal)*100:0;
+  const valorInventario=productos.reduce((a,p)=>a+(+p.costo||0)*(+p.cantidad||0),0);
+  return {ingresoTotal,costoTotal,gananciaTotal,rentabilidad,valorInventario,ventaMap,ingMap,ganMap,pm};
+}
+
+async function dibujarEstadisticas(){
+  const {ingresoTotal,costoTotal,gananciaTotal,rentabilidad,valorInventario,ventaMap,ingMap,ganMap,pm}=calcKPIs();
+  document.getElementById('kpiGrid').innerHTML=[
+    {icon:'💰',val:dop(ingresoTotal),label:'Ingresos Totales'},
+    {icon:'📦',val:dop(costoTotal),label:'Costo Mercancía'},
+    {icon:'✨',val:dop(gananciaTotal),label:'Ganancia Neta'},
+    {icon:'📈',val:rentabilidad.toFixed(1)+'%',label:'Rentabilidad'},
+    {icon:'🏪',val:dop(valorInventario),label:'Valor Inventario'},
+    {icon:'🛍️',val:ventas.length,label:'Transacciones'},
+  ].map(k=>`<div class="kpi-card"><div class="kpi-icon">${k.icon}</div><div class="kpi-val">${k.val}</div><div class="kpi-label">${k.label}</div></div>`).join('');
+
+  const sv=Object.entries(ventaMap).sort((a,b)=>b[1]-a[1]);
+  const vL=sv.map(x=>x[0]), vD=sv.map(x=>x[1]), gD=vL.map(n=>ganMap[n]||0);
+
+  if(charts.v) charts.v.destroy();
+  charts.v=new Chart(document.getElementById('chartVentas'),{type:'bar',data:{labels:vL,datasets:[{data:vD,backgroundColor:C,borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{display:false},ticks:{color:'#1A3D2B',font:{size:10,family:'Jost'}}}},responsive:true}});
+
+  if(charts.g) charts.g.destroy();
+  charts.g=new Chart(document.getElementById('chartGanancias'),{type:'bar',data:{labels:vL,datasets:[{data:gD,backgroundColor:gD.map(g=>g>=0?'#2D6B47':'#C0392B'),borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'RD$'+ctx.raw.toLocaleString('es-DO')}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'},callback:v=>'RD$'+v.toLocaleString('es-DO')}},y:{grid:{display:false},ticks:{color:'#1A3D2B',font:{size:10,family:'Jost'}}}},responsive:true}});
+
+  const byD={};
+  ventas.forEach(v=>{ const d=(v.fecha||'').slice(0,10); const info=pm[v.producto]||{precio:0}; byD[d]=(byD[d]||0)+(info.precio*(+v.cantidad||1)); });
+  const dates=Object.keys(byD).sort();
+  if(charts.l) charts.l.destroy();
+  charts.l=new Chart(document.getElementById('chartLinea'),{type:'line',data:{labels:dates,datasets:[{label:'Ingresos DOP',data:dates.map(d=>byD[d]),borderColor:'#C9A84C',backgroundColor:'rgba(201,168,76,.07)',fill:true,tension:.4,pointBackgroundColor:'#C9A84C',pointRadius:4,pointHoverRadius:6}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'RD$'+ctx.raw.toLocaleString('es-DO')}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'},callback:v=>'RD$'+v.toLocaleString('es-DO')}}},responsive:true}});
+
+  if(charts.s) charts.s.destroy();
+  charts.s=new Chart(document.getElementById('chartStock'),{type:'doughnut',data:{labels:productos.map(p=>p.nombre),datasets:[{data:productos.map(p=>+p.cantidad||0),backgroundColor:C,borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{color:'#7A9B87',padding:8,font:{size:10,family:'Jost'}}}},cutout:'62%',responsive:true}});
+
+  const pcp=productos.filter(p=>+p.costo&&+p.precio);
+  const mgData=pcp.map(p=>Math.round(margenSobreVenta(+p.costo,+p.precio)*100));
+  if(charts.m) charts.m.destroy();
+  charts.m=new Chart(document.getElementById('chartMargen'),{type:'bar',data:{labels:pcp.map(p=>p.nombre),datasets:[{data:mgData,backgroundColor:mgData.map(m=>m>=50?'#2D6B47':m>=30?'#C9A84C':'#C0392B'),borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'%'}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A9B87',font:{size:10,family:'Jost'},callback:v=>v+'%'},max:100}},responsive:true}});
+
+  generarRecomendaciones(ventaMap,ganMap,pm);
+}
+
+async function generarRecomendaciones(ventaMap,ganMap,pm){
+  const cont=document.getElementById('recList');
+  cont.innerHTML=`<div class="ai-loading"><div class="ai-spin"></div>IA está analizando tu inventario y ventas…</div>`;
+  const resumenProductos=productos.map(p=>{
+    const v=ventaMap[p.nombre]||0, g=ganMap[p.nombre]||0;
+    const mg=+p.costo&&+p.precio?Math.round(margenSobreVenta(+p.costo,+p.precio)*100):null;
+    return `- ${p.nombre}: stock ${p.cantidad}, costo RD$${p.costo||0}, precio RD$${p.precio||0}, margen ${mg!==null?mg+'%':'sin configurar'}, vendidos ${v} und, ganancia RD$${Math.round(g)}`;
+  }).join('\n');
+  const totalVentas=Object.values(ventaMap).reduce((a,b)=>a+b,0);
+  const totalIngreso=productos.reduce((s,p)=>s+(+p.precio||0)*(ventaMap[p.nombre]||0),0);
+  const totalGanancia=Object.values(ganMap).reduce((a,b)=>a+b,0);
+  const prompt=`Eres un asesor experto en negocios de moda retail en República Dominicana.\nAnaliza el inventario y ventas de "Matty Collection" y genera recomendaciones accionables en español.\nRESUMEN GENERAL:\n- Total ventas: ${totalVentas} unidades\n- Ingresos totales: RD$${Math.round(totalIngreso).toLocaleString('es-DO')}\n- Ganancia total: RD$${Math.round(totalGanancia).toLocaleString('es-DO')}\n- Rentabilidad: ${totalIngreso?Math.round((totalGanancia/totalIngreso)*100):0}%\nPRODUCTOS:\n${resumenProductos}\nCONTEXTO: ITBIS RD 18%. Margen saludable mínimo 30%.\nGenera de 4 a 7 recomendaciones. Formato exacto (sin markdown):\nTITULO: [título corto]\nTIPO: [precio|stock|alerta|oportunidad]\nDETALLE: [1-2 oraciones con números]\n---\nSolo los bloques, separados por "---".`;
+  try{
+    const texto=await gemini(prompt);
+    const bloques=texto.trim().split('---').map(b=>b.trim()).filter(Boolean);
+    if(!bloques.length) throw new Error('sin bloques');
+    const iconos={precio:'💡',stock:'📦',alerta:'⚠️',oportunidad:'🚀'};
+    const bgs={precio:'rgba(201,168,76,.1)',stock:'rgba(45,107,71,.1)',alerta:'rgba(192,57,43,.1)',oportunidad:'rgba(52,152,219,.1)'};
+    const tags={precio:'tag-precio',stock:'tag-stock',alerta:'tag-alerta',oportunidad:'tag-precio'};
+    const tagTxts={precio:'Revisar precio',stock:'Gestionar stock',alerta:'Atención requerida',oportunidad:'Aprovechar'};
+    const items=bloques.map(b=>{
+      const titulo=(b.match(/TITULO:\s*(.+)/)?.[1]||'').trim();
+      const tipo=(b.match(/TIPO:\s*(.+)/)?.[1]||'precio').trim().toLowerCase();
+      const detalle=(b.match(/DETALLE:\s*([\s\S]+)/)?.[1]||'').trim();
+      const key=Object.keys(iconos).find(k=>tipo.includes(k))||'precio';
+      return {titulo,detalle,key};
+    }).filter(i=>i.titulo);
+    if(!items.length) throw new Error('sin items');
+    cont.innerHTML=`<div class="ai-badge" style="margin-bottom:14px">✨ Análisis IA</div>`+items.map(r=>`<div class="rec-item"><div class="rec-icon" style="background:${bgs[r.key]}">${iconos[r.key]}</div><div class="rec-body"><strong>${esc(r.titulo)}</strong><p>${esc(r.detalle)}</p><span class="rec-tag ${tags[r.key]}">${tagTxts[r.key]}</span></div></div>`).join('');
+  } catch(e){ cont.innerHTML=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">No se pudo conectar con la IA. Verifica que el script tenga GEMINI_KEY configurada.</div>`; }
+}
+
+// ─── HISTORIAL ────────────────────────────────────────────
+function formatFecha(str){ if(!str) return '—'; if(/^\d{4}-\d{2}-\d{2}T/.test(str)){ const local=str.includes('Z')?new Date(str):new Date(str.replace('T',' ')); return local.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); } return str; }
+function renderHistorial(){
+  const icons={create:'🌿',edit:'✏️',delete:'🗑️',sale:'🛍️'};
+  const bgmap={create:'rgba(45,107,71,.1)',edit:'rgba(201,168,76,.1)',delete:'rgba(192,57,43,.1)',sale:'rgba(26,61,43,.1)'};
+  const w=document.getElementById('histWrap');
+  if(!historial.length){ w.innerHTML=`<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p>Sin registros aún</p></div>`; return; }
+  let h='<div class="hist-list">';
+  [...historial].reverse().forEach(i=>{
+    const t=i.tipo||'edit';
+    let detalle=esc(i.detalle||''), notaHtml='';
+    const nm=(i.detalle||'').match(/—\s*"(.+)"$/);
+    if(nm){ detalle=esc((i.detalle||'').replace(/\s*—\s*".+"$/,'')); notaHtml=`<span style="display:inline-block;margin-top:4px;background:rgba(201,168,76,.12);color:var(--oro-dim);border-radius:5px;padding:2px 8px;font-size:11px;font-style:italic;">📝 ${esc(nm[1])}</span>`; }
+    h+=`<div class="hist-item"><div class="hist-icon" style="background:${bgmap[t]||bgmap.edit}">${icons[t]||'📝'}</div><div class="hist-body"><strong>${esc(i.accion||'')}</strong><small>${detalle} &nbsp;·&nbsp; ${formatFecha(i.fecha)}</small>${notaHtml}</div></div>`;
+  });
+  h+='</div>';
+  w.innerHTML=h;
+}
+
+// ─── PRECIO IA ────────────────────────────────────────────
+let _sugerenciasTimer=null;
+function calcularSugerencias(){
+  const costo=+document.getElementById('fCosto').value||0;
+  const box=document.getElementById('precioSugerido');
+  if(!costo){ box.classList.remove('show'); return; }
+  box.classList.add('show');
+  const grid=document.getElementById('psGrid'), nota=document.getElementById('psNota');
+  const opciones=[{label:'Mínimo',pct:MARGEN_MIN,desc:'30%'},{label:'Óptimo',pct:MARGEN_MED,desc:'50%'},{label:'Premium',pct:MARGEN_ALTO,desc:'80%'}];
+  grid.innerHTML=opciones.map((o,i)=>{
+    const val=Math.round(precioConMargen(costo,o.pct));
+    return `<div class="ps-opt" onclick="elegirPrecio(${val})" id="psOpt${i}"><div class="ps-opt-label">${o.label}</div><div class="ps-opt-val">${dop(val)}</div><div class="ps-opt-pct">${o.desc} margen</div></div>`;
+  }).join('');
+  nota.innerHTML=`<div class="ai-loading"><div class="ai-spin"></div>IA está analizando el precio ideal…</div>`;
+  actualizarMargenModal();
+  clearTimeout(_sugerenciasTimer);
+  _sugerenciasTimer=setTimeout(()=>pedirSugerenciaIA(costo),800);
+}
+async function pedirSugerenciaIA(costo){
+  const nombre=document.getElementById('fNombre').value.trim()||'producto de moda/ropa';
+  const nota=document.getElementById('psNota');
+  const ctx=productos.length?`Otros productos: ${productos.slice(0,5).map(p=>`${p.nombre} (costo RD$${p.costo||0}, precio RD$${p.precio||0})`).join(', ')}.`:'';
+  const prompt=`Eres un asesor de negocios experto en retail de moda en República Dominicana.\nProducto: "${nombre}"\nCosto unitario: RD$${costo}\n${ctx}\nContexto: ITBIS 18%. Ropa <RD$6,000 puede estar exenta pero el comerciante paga ITBIS en insumos.\nResponde en español, máximo 5 líneas, sin markdown:\n1. Precio ideal considerando mercado local y márgenes saludables.\n2. Razón breve del precio.\n3. Advertencia si el costo es muy alto.`;
+  try{
+    const r=await gemini(prompt);
+    nota.innerHTML=`<div class="ai-badge">✨ Análisis IA</div><div class="ps-ai-nota">${esc(r.trim())}</div>`;
+  } catch(e){
+    nota.innerHTML=`ℹ️ Precio mínimo recomendado: <strong>${dop(Math.round(precioConMargen(costo,MARGEN_MIN)))}</strong> (30% margen).`;
+  }
+}
+function elegirPrecio(val){ document.getElementById('fPrecio').value=val; actualizarMargenModal(); }
+function actualizarMargenModal(){
+  const costo=+document.getElementById('fCosto').value||0, precio=+document.getElementById('fPrecio').value||0;
+  const el=document.getElementById('margenModal');
+  if(!costo||!precio){ el.textContent=''; return; }
+  const mg=margenSobreVenta(costo,precio), mgPct=Math.round(mg*100), ganancia=precio-costo;
+  const cls=mgPct>=50?'#2D6B47':mgPct>=30?'#c0711d':'#C0392B';
+  el.innerHTML=`Ganancia por unidad: <strong style="color:${cls}">${dop(ganancia)}</strong> &nbsp;·&nbsp; Margen: <strong style="color:${cls}">${mgPct}%</strong>${mgPct<30?' ⚠️ Por debajo del mínimo recomendado':''}`;
+}
+
+// ─── TOAST ────────────────────────────────────────────────
 function toast(msg,tipo='ok'){
   const cols={ok:'#2D6B47',warn:'#C9A84C',err:'#C0392B'};
   const t=document.createElement('div');
@@ -1204,7 +999,6 @@ function toast(msg,tipo='ok'){
   document.getElementById('toasts').appendChild(t);
   setTimeout(()=>t.remove(),3400);
 }
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 document.getElementById('modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
 document.getElementById('modalDetalle').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeDetalle(); });
