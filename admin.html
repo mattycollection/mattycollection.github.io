@@ -6,7 +6,6 @@
 <title>Matty Collection · Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
     --verde:       #1A3D2B;
@@ -538,83 +537,36 @@ async function cargarFotoDefault() {
   }
 }
 
-// ─── SUBIR FOTO DIRECTO A GOOGLE DRIVE (Drive API + GIS) ──────────────────
-// Usa Google Identity Services para obtener un access token temporal,
-// luego sube directamente a la carpeta de Drive con la API REST.
-// El usuario verá un popup de Google para autorizar el acceso.
+// ─── SUBIR FOTO VIA APPS SCRIPT (chunks JSONP) ───────────────────────────
+// El GAS tiene permisos de Drive sin OAuth extra.
+// Enviamos el base64 en trozos de ~1500 chars via JSONP GET,
+// el script los acumula en caché y ensambla el archivo al final.
 
-const DRIVE_FOLDER_ID  = '1ZvGBmpS79qAapWwT34Y81FiBJXGrR-WH';
-// Client ID de Google Cloud — debe tener Drive API habilitada y
-// https://mattycollection.github.io en los orígenes autorizados.
-// Crear en: console.cloud.google.com → APIs & Services → Credentials → OAuth 2.0 Client ID
-const GOOGLE_CLIENT_ID = '59853422576-45mreogh9bd7rlu5qu75eh8do246bpn9.apps.googleusercontent.com';
-
-let _gisToken = null;
-let _gisTokenExpiry = 0;
-
-function obtenerTokenDrive() {
-  return new Promise((resolve, reject) => {
-    if (_gisToken && Date.now() < _gisTokenExpiry) {
-      resolve(_gisToken); return;
-    }
-    if (!GOOGLE_CLIENT_ID) {
-      reject(new Error('GOOGLE_CLIENT_ID no configurado — ver instrucciones en el código'));
-      return;
-    }
-    if (!window.google?.accounts?.oauth2) {
-      reject(new Error('Google Identity Services no cargado'));
-      return;
-    }
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive',
-      callback: (resp) => {
-        if (resp.error) { reject(new Error(resp.error)); return; }
-        _gisToken = resp.access_token;
-        _gisTokenExpiry = Date.now() + (resp.expires_in - 60) * 1000;
-        resolve(_gisToken);
-      }
-    });
-    client.requestAccessToken();
-  });
-}
+const CHUNK_SIZE = 1500; // chars de base64 por petición GET
 
 async function subirFotoDrive(base64, mimeType, fileName) {
-  const token = await obtenerTokenDrive();
+  const uploadId = 'up_' + Date.now();
+  const total    = Math.ceil(base64.length / CHUNK_SIZE);
 
-  // Convertir base64 a Blob binario
-  const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-  const blob  = new Blob([bytes], { type: mimeType });
-
-  // Multipart upload a Drive API
-  const metadata = JSON.stringify({
-    name: fileName,
-    parents: [DRIVE_FOLDER_ID]
-  });
-
-  const form = new FormData();
-  form.append('metadata', new Blob([metadata], { type: 'application/json' }));
-  form.append('file', blob);
-
-  const res = await fetch(
-    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
-    { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: form }
-  );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || 'Error Drive API ' + res.status);
+  // Enviar chunks
+  for (let i = 0; i < total; i++) {
+    const chunk = base64.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+    const res = await api({
+      action: 'uploadChunk',
+      uploadId,
+      chunk,
+      index: i,
+      total,
+      mimeType,
+      fileName
+    });
+    if (!res || !res.ok) throw new Error(res?.error || 'error en chunk ' + i);
+    // Si es el último chunk, el script ya ensambló y devuelve la URL
+    if (i === total - 1) {
+      if (!res.url) throw new Error('No se recibió URL del archivo');
+      return res.url;
+    }
   }
-  const data = await res.json();
-  const fileId = data.id;
-
-  // Hacer el archivo público (Anyone with link can view)
-  await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ role: 'reader', type: 'anyone' })
-  });
-
-  return `https://lh3.googleusercontent.com/d/${fileId}`;
 }
 
 // ─── GEMINI via JSONP (mismo mecanismo que el resto de llamadas) ──
